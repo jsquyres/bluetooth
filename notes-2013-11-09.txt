@@ -1,0 +1,48 @@
+Notes from 2013-11-09 meeting:
+
+Random useful URLs:
+-------------------
+
+http://en.wikipedia.org/wiki/Bluetooth_protocols
+
+https://developer.bluetooth.org/TechnologyOverview/Pages/HCI.aspx
+
+http://blog.mister-muffin.de/2011/05/31/using-bluez/
+
+Useful commands:
+----------------
+
+hciconfig
+hcitool
+
+(see man pages for the above tools)
+
+
+Random notes:
+-------------
+
+We determined that we can see iPhone devices with the "hcitool scan"
+command, but only if our iPhone 5's are in pairing mode.  The RPi
+seems to "remember" the device for a while, and then forget about it
+-- suggesting that it is caching scan data for a while, and then
+discarding the cache data (at which point you need to do a new scan).
+
+The RPi adapter device name for the BT nub is "hci0" (i.e., the first
+HCI device that Linux found).
+
+The iPhone BT devices have MAC addresses, just like wifi/Ethernet
+devices.  If you go into iPhone config->general, both the BT and Wifi
+MAC addresses are visible.  When you hcitool scan, you'll see the same
+iPhone MAC addresses from the RPi.
+
+Next steps:
+-----------
+
+Figure out how to use the bluez/hcitools command to pair the RPi with
+the iPhone.
+
+Can the iPhone be paired with more than one device simultaneously?
+
+Can the RPi be paired with more than one device simultaneously?
+
+How far away can the iPhone be for the RPi to see it?
