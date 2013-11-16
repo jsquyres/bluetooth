@@ -1,0 +1,63 @@
+Notes from 2013-11-16 meeting:
+
+Next meeting dates:
+- Nov 23: Jeff unavailable
+- Nov 30: Jeff unavailable (including Thanksgiving)
+   ---> Need to be careful around these 2 weeks to ensure we still get
+        progress
+- Dec 7:  
+- Dec 14: 
+- Dec 21: 
+- Dec 28: Jeff unavailable
+- Jan 4:  (easy because both of us are on vacation)
+- Jan 11: 
+- Jan 18: 
+- Jan 25: 
+
+-----------------------------
+
+Homework for next time:
+- Cash register
+  Expands on cash register program
+  Enter starting cash, print ending cash in register, etc.
+  Allow entering tax rate (ask this once at startup)
+  Allow for entry of multiple items in a single order
+  Enter a description of each item
+  When no more items to enter, print a list of all item descriptions
+      and prices in this order
+      --> Use STL vector<...> to save stuff.
+  Print subtotal, tax, and total (i.e., subtotal + tax)
+  Allow canceling of an order
+  Allow a gift message with the order
+      --> Suggestion: use struct item, and also a struct order (for
+          the entire order, including gift message)
+
+-----------------------------
+
+Requirements for science project:
+
+- Go lookup which 3 science fairs are possible
+  Look up the requirements (and dates!) for each
+  Start deciding which two to target
+  --> Probably have a PPT and/or a research paper
+
+- Requirement for class: ?5-10? minute PPT presentation
+  --> Jeff will definitely have opinions and be able to critique your
+      PPT slides and presentations
+  --> Luke to find out when this will be; find out before Christmas
+      break
+
+- What do we need to be collecting along the way for what you need to
+  turn in?
+  --> Start bringing notebook, we will be writing in it, and
+      signing+dating every page every time
+
+- Scientific method (i.e., science vs. just hacking around)
+  Ask a question
+  Background research
+  Make a hypothesis
+  Conduct experiments
+  Analyze results
+  Communicate results
+
+- Logbook
