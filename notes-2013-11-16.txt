@@ -32,6 +32,15 @@ Homework for next time:
       --> Suggestion: use struct item, and also a struct order (for
           the entire order, including gift message)
 
+- Synthesize notes on text/word and push it to Git
+
+- Find news articles about bluetooth low energy
+
+- Get hcitool lescan to detect my iPhone
+
+- The thread about lescan etc.
+	- https://groups.google.com/forum/#!topic/pandaboard/6Kf9V6KcXsw
+
 -----------------------------
 
 Requirements for science project:
@@ -53,11 +62,48 @@ Requirements for science project:
       signing+dating every page every time
 
 - Scientific method (i.e., science vs. just hacking around)
-  Ask a question
+  Ask a question 
+  ---> Can I detect nearby bluetooth devices from my Raspberry Pi? If so, how?
   Background research
+    - ssh to the RPi
+    - using Terminal and a command line
+    - Networking
+	- IPv4 addresses
+      	  - how they work
+	  - their role on a local and global scale
+        - NAT - network address translation
+	- Routers on a global scale
+	- Multi-step routing
+	  - No global knowledge, just the next step
+	- Private IP Address Ranges
+          - 192.168.x.y
+	  - 10.x.y.z
+	  - 172.16.x.y
+	- Loopback IP Address
+	  - 127.x.y.z - only for the same computer (
+    - C++ STL vectors
+	- methods of using them
+	- syntax
   Make a hypothesis
   Conduct experiments
   Analyze results
   Communicate results
 
 - Logbook
+
+------------------------
+Bluetooth Experiments
+- Run hciconfig hci0 piscan to make the RPi discoverable
+	- Did not show up on the iPhones, but did show up on the Macs
+	- iPhones appear to filter bluetooth devices
+- On RPi, run hciconfig hci0 name [name] to name the device
+- Bluetooth - setup new device
+	- Select [name] and hit continue
+	- It will show "Pairing Failed" and give you a pin
+	- Run bluetooth-agent [pin] on the RPi
+	- Hit continue on the computer to try to pair again
+	- Enter any random password, hit enter, and pairing is complete
+- hcitool dump -X is a bluetooth sniffer - outputs all of the commands and replies to the bluetooth 
+  device
+	- run two terminals, one with hcitool dump -X and one with the bluetooth commands
+- If the bluetooth starts acting weird, do a hciconfig hci0 down and then up
