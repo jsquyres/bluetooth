@@ -18,3 +18,11 @@ C++ homework:
 - create a GetNonEmptyString function and apply wherever necessary
 - have an optional gift message per item
 - cin only picks up the first word with strings - FIX!
+
+Bluetooth Homework:
+- repeat hcidump -X exercise
+- investigate bluetooth LE Advertising mode
+
+Bluetooth Info:
+- hcidump -X is a bluetooth sniffer - outputs all of the commands and replies to the bluetooth device
+	- run two terminals, one with hcidump -X and one with the bluetooth commands
