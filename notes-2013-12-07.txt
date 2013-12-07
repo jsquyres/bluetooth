@@ -1,0 +1,20 @@
+Notes from 2013-12-7 meeting:
+
+C++ Notes:
+- to exit a git commit message, press ctrl x - ctrl s (save) -- ctrl x - ctrl c (exit)
+
+Emacs Notes:
+- ctrl x - ctrl f (open file)
+- ctrl x - b (switch buffer)
+- ctrl x - 2 (split frames)
+- ctrl x - 1 (one frame)
+- ctrl x - o (go to next frame)
+- ctrl g (quit current command)
+
+C++ homework:
+- use GetPositiveDouble wherever necessary
+- use ask-if-yes wherever relevant
+- fix the math bug with the total register cash
+- create a GetNonEmptyString function and apply wherever necessary
+- have an optional gift message per item
+- cin only picks up the first word with strings - FIX!
