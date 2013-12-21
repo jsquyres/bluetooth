@@ -1,0 +1,52 @@
+URLs from Jeff:
+
+Bluetooth stuff
+===============
+
+- Handly BLE tutorial (from the perspective of someone creating a new
+  BLE hardware device, but still useful):
+
+  http://blog.punchthrough.com/post/46285311872/testing-bluetooth-low-energy-devices
+
+- LightBlue iOS app.  Handy for simulating BLE Peripherals or Centrals:
+
+  http://itunes.apple.com/us/app/lightblue/id557428110?mt=8&ign-mpt=uo%3D4
+
+- CoreBluetooth iOS 7 documentation:
+
+  https://developer.apple.com/library/ios/documentation/NetworkingInternetWeb/Conceptual/CoreBluetooth_concepts/AboutCoreBluetooth/Introduction.html#//apple_ref/doc/uid/TP40013257
+
+- bluetooth.org links:
+
+  - Bluetooth Quick Start kit (v2), including iOS starter code
+    https://developer.bluetooth.org/DevelopmentResources/Pages/Quick-Start-Kit.aspx
+  - Getting started w/ BT
+    https://developer.bluetooth.org/DevelopmentResources/Pages/Getting-Started.aspx
+  - BLE overview
+    https://developer.bluetooth.org/TechnologyOverview/Pages/BLE.aspx
+  - BLE security
+    https://developer.bluetooth.org/TechnologyOverview/Pages/LE-Security.aspx
+
+- Texas Instruments bluetooth wiki, including some examples (not sure
+  this is directly helpful; it seems to focus on the TI BT sensors,
+  but there might be some useful nuggets in here...?).
+
+  http://processors.wiki.ti.com/index.php/Category:BluetoothLE
+
+iOS / XCode stuff
+=================
+
+- WWDC 2013 videos.  One good one is "From Zero to App Store in XCode
+  5" -- can download the PDF and the videos (can only watch the video
+  inline in Safari):
+
+  https://developer.apple.com/wwdc/videos/index.php?id=403
+
+  CoreBluetooth is another good one:
+
+  https://developer.apple.com/wwdc/videos/index.php?id=703
+
+  --> Note: downloading and viewing the PDF doesn't make much sense
+      without first watching the video (i.e., the slides are very
+      sparse in terms of explanations; the words the guy says are
+      quite important to understand the slides).
