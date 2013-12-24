@@ -3,8 +3,8 @@
 
    On Raspbian, you must first:
 
-       apt-get download libbluetooth-dev
-       apt-get install libbluetooth-dev
+       sudo apt-get download libbluetooth-dev
+       sudo apt-get install libbluetooth-dev
 */
 
 #include <stdio.h>
@@ -22,8 +22,8 @@ static void printtime(void)
     static long base, last_time;
     long now, now_sec, now_usec;
     long elapsed, elapsed_sec, elapsed_usec;
-
     struct timeval tv;
+
     gettimeofday(&tv, NULL);
 
     now = tv.tv_sec * 1000000;
