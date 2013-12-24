@@ -18,16 +18,16 @@ Next meeting dates:
 
 Homework for next time:
 - Cash register
-  Expands on cash register program
-  Enter starting cash, print ending cash in register, etc.
-  Allow entering tax rate (ask this once at startup)
-  Allow for entry of multiple items in a single order
-  Enter a description of each item
-  When no more items to enter, print a list of all item descriptions
+  *Expands on cash register program
+  *Enter starting cash, print ending cash in register, etc.
+  *Allow entering tax rate (ask this once at startup)
+  *Allow for entry of multiple items in a single order
+  *Enter a description of each item
+  *When no more items to enter, print a list of all item descriptions
       and prices in this order
       --> Use STL vector<...> to save stuff.
-  Print subtotal, tax, and total (i.e., subtotal + tax)
-  Allow canceling of an order
+  *Print subtotal, tax, and total (i.e., subtotal + tax)
+  *Allow canceling of an order
   Allow a gift message with the order
       --> Suggestion: use struct item, and also a struct order (for
           the entire order, including gift message)
@@ -98,12 +98,12 @@ Bluetooth Experiments
 	- iPhones appear to filter bluetooth devices
 - On RPi, run hciconfig hci0 name [name] to name the device
 - Bluetooth - setup new device
-	- Select [name] and hit continue
+	- Select [name] and hit continue on the computer
 	- It will show "Pairing Failed" and give you a pin
 	- Run bluetooth-agent [pin] on the RPi
 	- Hit continue on the computer to try to pair again
 	- Enter any random password, hit enter, and pairing is complete
-- hcitool dump -X is a bluetooth sniffer - outputs all of the commands and replies to the bluetooth 
+- hcidump -X is a bluetooth sniffer - outputs all of the commands and replies to the bluetooth 
   device
-	- run two terminals, one with hcitool dump -X and one with the bluetooth commands
+	- run two terminals, one with hcidump -X and one with the bluetooth commands
 - If the bluetooth starts acting weird, do a hciconfig hci0 down and then up

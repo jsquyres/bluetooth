@@ -18,6 +18,7 @@ C++ homework:
 - create a GetNonEmptyString function and apply wherever necessary
 - have an optional gift message per item
 - cin only picks up the first word with strings - FIX!
+- truncate the tax to two decimal places
 
 Bluetooth Homework:
 - repeat hcidump -X exercise
