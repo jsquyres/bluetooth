@@ -1,4 +1,10 @@
-all: simpletest
+all: simpletest scanner
+
+CC = gcc
+CXX = g++
+CFLAGS = -g
+LDFLAGS =
+LIBS = -lbluetooth
 
 #
 # On Raspbian, you must first:
@@ -8,7 +14,10 @@ all: simpletest
 #
 
 simpletest: simpletest.c
-	$(CC) simpletest.c -g -lbluetooth -o simpletest
+	$(CC) $(CFLAGS) $< $(LDFLAGS) $(LIBS) -o $@
+
+scanner: scanner.cc
+	$(CXX) $(CFLAGS) $< $(LDFLAGS) $(LIBS) -o $@
 
 clean:
-	rm -f simpletest
+	rm -f simpletest scanner
