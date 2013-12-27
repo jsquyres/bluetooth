@@ -1,10 +1,10 @@
-/*
- * Scanner tool for science experiments
- *
- * Jeff Squyres (c) 2013
- *
- * Strongly influenced by hcitool.c from the bluez toolkit.
- */
+//
+// Scanner tool for science experiments
+//
+// Jeff Squyres (c) 2013
+//
+// Strongly influenced by hcitool.c from the bluez toolkit.
+//
 
 #include <stdio.h>
 #include <unistd.h>
@@ -15,6 +15,7 @@
 #include <getopt.h>
 
 #include <iostream>
+#include <iomanip>
 #include <vector>
 #include <string>
 #include <map>
@@ -27,7 +28,7 @@ using namespace std;
 
 static int max_experiments = 0;
 static int signal_received = -1;
-static const string good_addr = "74:1E:AF:AE:E4:8A";
+static string good_address;
 
 static int help_arg = 0;
 static int print_skips_arg = 0;
@@ -37,15 +38,18 @@ static int debug_arg = 0;
 static struct option options[] = {
 	{ "help",		0, &help_arg, 'h' },
 	{ "print-skips",	0, &print_skips_arg, 'p' },
-	{ "delay",		1, &delay_arg, 'd' },
 	{ "debug",		0, &debug_arg, 'D' },
+        // Need to get values for the next two, so don't specify a
+        // variable to fill
+	{ "delay",		1, 0, 'd' },
+	{ "address",		1, 0, 'a' },
 	{ 0, 0, 0, 0 }
 };
 
 
-#define EIR_NAME_SHORT              0x08  /* shortened local name */
-#define EIR_NAME_COMPLETE           0x09  /* complete local name */
-#define D(a) if (debug_arg) (a)
+#define EIR_NAME_SHORT              0x08  // shortened local name
+#define EIR_NAME_COMPLETE           0x09  // complete local name
+#define D(a) if (0 != debug_arg) (a)
 
 struct result_t {
     struct timeval timestamp;
@@ -64,17 +68,21 @@ enum result_type_t {
 };
 
 
+//
+// Parse data from le_advertising_info and get a name out of it
+//
 static string eir_parse_name(uint8_t *eir, size_t eir_len)
 {
     size_t offset;
     string ret;
+    char buffer[HCI_MAX_EVENT_SIZE];
 
     offset = 0;
     while (offset < eir_len) {
         uint8_t field_len = eir[0];
         size_t name_len;
 
-        /* Check for the end of EIR */
+        // Check for the end of EIR
         if (field_len == 0) {
             break;
         }
@@ -87,7 +95,9 @@ static string eir_parse_name(uint8_t *eir, size_t eir_len)
         case EIR_NAME_SHORT:
         case EIR_NAME_COMPLETE:
             name_len = field_len - 1;
-            ret.copy((char*) &eir[2], name_len, 0);
+            memset(buffer, 0, sizeof(buffer));
+            memcpy(buffer, &eir[2], name_len);
+            ret = buffer;
             return ret;
         }
 
@@ -100,6 +110,33 @@ failed:
 }
 
 
+//
+// Convert a struct timeval to a long long
+//
+static long long tv2long(struct timeval tv)
+{
+    long long ret = tv.tv_sec;
+    ret *= 1000000;
+    ret += tv.tv_usec;
+    return ret;
+}
+
+
+//
+// Handler for SIGINT
+//
+static void sigint_handler(int sig)
+{
+    // Just record the signal; we'll check for it/handle it in the
+    // main loop
+    signal_received = sig;
+}
+
+
+//
+// Read the data from a evt_le_meta_event and record it in the results
+// map (if it's the type we want and it matches the good_address)
+//
 static result_type_t record_result(int device, results_map_t &results)
 {
     int len;
@@ -109,7 +146,7 @@ static result_type_t record_result(int device, results_map_t &results)
     struct timeval now;
     result_t result;
 
-    /* Read the result from the fd */
+    // Read the result from the fd
     while ((len = read(device, buf, sizeof(buf))) < 0) {
         if (errno == EINTR && signal_received == SIGINT) {
             return RESULT_DONE;
@@ -130,11 +167,11 @@ static result_type_t record_result(int device, results_map_t &results)
         return RESULT_BAD;
     }
 
-    /* Extract the result and save it in the vector */
+    // Extract the result and save it in the vector
     gettimeofday(&result.timestamp, NULL);
     info = (le_advertising_info *) (meta->data + 1);
     ba2str(&info->bdaddr, result.addr);
-    if (result.addr == good_addr) {
+    if (good_address.empty() || result.addr == good_address) {
         result.name = eir_parse_name(info->data, info->length);
         results[result.addr].push_back(result);
 
@@ -150,14 +187,10 @@ static result_type_t record_result(int device, results_map_t &results)
     return RESULT_SKIP;
 }
 
-static long tv2long(struct timeval tv)
-{
-    long ret = tv.tv_sec * 1000000;
-    ret += tv.tv_usec;
-    return ret;
-}
 
-
+//
+// Loop through a map of results and print them all
+//
 static void print_results(int experiment_num, results_map_t &results)
 {
     D(printf("Printing results for experiment #%d...\n", experiment_num));
@@ -166,23 +199,72 @@ static void print_results(int experiment_num, results_map_t &results)
     for (i = results.begin(); i != results.end(); ++i) {
         string addr = i->first;
         
-        results_t::iterator j;
         int count = i->second.size();
-        long first = tv2long(i->second.front().timestamp);
-        long last = tv2long(i->second.back().timestamp);
+        struct timeval first = i->second.front().timestamp;
+        struct timeval last = i->second.back().timestamp;
+
+        // Find a non "unknown" name
+        results_t::iterator j;
+        string name = i->second.begin()->name;
+        name = "unknown";
+        if (name == "unknown") {
+            for (j = i->second.begin(); j != i->second.end(); ++j) {
+                if (j->name != "unknown") {
+                    name = j->name;
+                    break;
+                }
+            }
+        }
+
+        // Print it out
         cout << experiment_num << "," 
              << addr << "," 
+             << name << ","
              << count << "," 
-             << first << "," 
-             << last 
+             << first.tv_sec << "."
+             << setfill('0') << setw(6) << first.tv_usec << ","
+             << last.tv_sec << "."
+             << setfill('0') << setw(6) << last.tv_usec
              << endl;
     }
-    cout << endl;
 }
 
 
 //
-// Main loop
+// Determine if it has been <delay_arg> seconds since the last good
+// result was collected
+//
+static bool time_for_next_experiment(bool have_results,
+                                     long long last_good_result)
+{
+    // If we have some results and our last good result was
+    // more than delay_arg seconds ago, then
+    // end this experiment and go on to the next */
+    if (!have_results) {
+        return false;
+    }
+
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+
+    long long now = tv2long(tv);
+    long long time_for_next = last_good_result + delay_arg * 1000000;
+    D(printf("We have results:\n"
+             "\ttime for next: %llu\n"
+             "\tnow:           %llu\n",
+             time_for_next, now));
+
+    if (now > time_for_next) {
+        D(printf("*** Time for next experiment!\n"));
+        return true;
+    }
+
+    return false;
+}
+
+
+//
+// Main experiment loop
 //
 static void experiment_loop(int device, uint8_t filter_type)
 {
@@ -191,29 +273,12 @@ static void experiment_loop(int device, uint8_t filter_type)
     experiment_num = 1;
     while (0 == max_experiments || experiment_num <= max_experiments) {
         results_map_t results;
-        long last_good_result = 0;
+        long long last_good_result = 0;
 
-	while (1) {
-            struct timeval tv;
+        // Keep looping in this experiment until it is done
+	while (!time_for_next_experiment(!results.empty(), last_good_result)) {
 
-            /* If we have some results and our last good result was
-               more than delay_arg seconds ago, then
-               end this experiment and go on to the next */
-            if (!results.empty()) {
-                gettimeofday(&tv, NULL);
-
-                long now = tv2long(tv);
-                long time_for_next = 
-                    last_good_result + delay_arg * 1000000;
-                D(printf("We have results:\n\ttime for next: %lu\n\tnow:           %lu\n",
-                         time_for_next, now));
-
-                if (now > time_for_next) {
-                    D(printf("*** Time for next experiment!\n"));
-                    break;
-                }
-            }
-
+            // Setup for the select
             fd_set fdset;
             struct timeval timeout;
 
@@ -221,10 +286,11 @@ static void experiment_loop(int device, uint8_t filter_type)
             FD_SET(device, &fdset);
             timeout.tv_sec = delay_arg;
             timeout.tv_usec = 0;
-
             int ret = select(device + 1, &fdset, NULL, NULL, &timeout);
+
             if (ret > 0) {
-                /* If something was ready to read, process it */
+                // If something was ready to read, process it
+                struct timeval tv;
                 result_type_t ret = record_result(device, results);
                 switch(ret) {
                 case RESULT_GOOD:
@@ -240,34 +306,34 @@ static void experiment_loop(int device, uint8_t filter_type)
                     continue;
                 }
             } else if (0 == ret) {
-                /* If nothing was ready, and if we have some previous
-                   results, then end this experiment and go on to the
-                   next */
+                // If nothing was ready, and if we have some previous
+                // results, then end this experiment and go on to the
+                // next
                 if (!results.empty()) {
                     break;
                 }
             } else {
-                /* Otherwise, there was an error.  Did someone hit
-                   ctrl-C? */
+                // Otherwise, there was an error.  Did someone hit
+                // ctrl-C?
                 if (errno == EINTR && signal_received == SIGINT) {
                     return;
                 }
 
-                /* If it was a "just try again" kind of erro, then do
-                   so */
+                // If it was a "just try again" kind of erro, then do
+                // so
                 if (errno == EAGAIN || errno == EINTR) {
                     continue;
                 }
 
-                /* It was some other kind of error; we should probably
-                   just abourt */
+                // It was some other kind of error; we should probably
+                // just abourt
                 perror("select failed");
                 exit(1);
             }
         }
 
-        /* Setup for next experiment */
-        printf("Experiment %d done; looping to next...\n", experiment_num);
+        // Setup for next experiment
+        D(printf("Experiment %d done; looping to next...\n", experiment_num));
         print_results(experiment_num, results);
         results.clear();
         ++experiment_num;
@@ -275,17 +341,9 @@ static void experiment_loop(int device, uint8_t filter_type)
 }
 
 
-/*
- * Handler for SIGINT
- */
-static void sigint_handler(int sig)
-{
-    /* Just record the signal; we'll check for it/handle it in the
-       main loop */
-    signal_received = sig;
-}
-
-
+//
+// Set the set socket and filter options, then run the experiment loop
+//
 static void run_experiments(int device, uint8_t filter_type)
 {
     struct hci_filter nf, of;
@@ -293,14 +351,14 @@ static void run_experiments(int device, uint8_t filter_type)
     socklen_t olen;
     int len;
 
-    /* Get original flags */
+    // Get original flags
     olen = sizeof(of);
     if (getsockopt(device, SOL_HCI, HCI_FILTER, &of, &olen) < 0) {
         perror("Could not get socket options");
         exit(1);
     }
 
-    /* Set my filter flags */
+    // Set my filter flags
     hci_filter_clear(&nf);
     hci_filter_set_ptype(HCI_EVENT_PKT, &nf);
     hci_filter_set_event(EVT_LE_META_EVENT, &nf);
@@ -310,21 +368,24 @@ static void run_experiments(int device, uint8_t filter_type)
         exit(1);
     }
 
-    /* Catch if someone hits ctrl-C */
+    // Catch if someone hits ctrl-C
     memset(&sa, 0, sizeof(sa));
     sa.sa_flags = SA_NOCLDSTOP;
     sa.sa_handler = sigint_handler;
     sigaction(SIGINT, &sa, NULL);
 
-    /* Main loop */
+    // Call the main loop
     experiment_loop(device, filter_type);
 
 done:
-    /* Restore original flags */
+    // Restore original flags
     setsockopt(device, SOL_HCI, HCI_FILTER, &of, sizeof(of));
 }
 
 
+//
+// Startup the LE scan, run the experiments, and then stop the scan
+//
 static void scan(int device)
 {
     int err;
@@ -345,17 +406,17 @@ static void scan(int device)
         exit(1);
     }
 
-    /* Start the scan */
+    // Start the scan
     err = hci_le_set_scan_enable(device, enable, filter_duplicates, to);
     if (err < 0) {
         perror("Enable scan failed");
         exit(1);
     }
 
-    /* Run the experiments */
+    // Run the experiments
     run_experiments(device, filter_type);
 
-    /* Stop the scan */
+    // Stop the scan
     enable = 0x00;
     err = hci_le_set_scan_enable(device, enable, filter_duplicates, to);
     if (err < 0) {
@@ -364,25 +425,49 @@ static void scan(int device)
     }
 }
 
+
+//
+// Print the help message
+//
+static void show_help(const string argv0)
+{
+    cout << argv0 << " usage:" << endl << endl
+         << "--help         This help message" << endl
+         << "--print-skips  Print address of devices that are skipped" << endl
+         << "--delay N      Delay N seconds between experiments" << endl
+         << "--address X    Only monitor for address X (e.g., AA:BB:CC:DD:EE:FF)" << endl
+         << "--debug        Print debugging messages" << endl;
+}
+
+
+//
+// main
+//
 int main(int argc, char* argv[])
 {
-    int device_id, device, i;
+    int device_id, device, i, ret = 0;
 
     while (-1 != (i = getopt_long(argc, argv, "", options, NULL))) {
+        D(printf("Analyzing: 0x%x\n", i));
         switch(i) {
         case 'd':
             delay_arg = atoi(optarg);
-            printf("Got delay: %d\n", delay_arg);
+            D(printf("Got delay: %d\n", delay_arg));
             break;
+
+        case 'a':
+            good_address = optarg;
+            D(printf("Got address: %s\n", good_address.c_str()));
+            break;
+
+        case '?':
+            show_help(argv[0]);
+            exit(1);
         }
     }
 
     if (help_arg) {
-        cout << argv[0] << " usage:" << endl
-             << "--help         This help message" << endl
-             << "--print-skips  Print address of devices that are skipped" << endl
-             << "--delay        Delay (in seconds) between experiments" << endl
-             << "--debug        Print debugging messages" << endl;
+        show_help(argv[0]);
         exit(0);
     }
 
