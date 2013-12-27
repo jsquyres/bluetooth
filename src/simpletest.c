@@ -51,6 +51,12 @@ static void printtime(void)
     first = 0;
 }
 
+typedef struct bt_class {
+    unsigned format_type : 2;
+    unsigned major : 11;
+    unsigned minor : 11;
+} bt_class_t;
+
 int main(int argc, char **argv)
 {
     inquiry_info *ii = NULL;
@@ -59,6 +65,7 @@ int main(int argc, char **argv)
     int i;
     char addr[19] = { 0 };
     char name[248] = { 0 };
+    bt_class_t *btc;
 
     dev_id = hci_get_route(NULL);
     sock = hci_open_dev( dev_id );
@@ -80,7 +87,7 @@ int main(int argc, char **argv)
     num_rsp = hci_inquiry(dev_id, len, max_rsp, NULL, &ii, flags);
     if( num_rsp < 0 ) perror("hci_inquiry");
     printtime();
-    printf("Inquired\n");
+    printf("Inquired -- found %d devices\n", num_rsp);
 
     for (i = 0; i < num_rsp; i++) {
         ba2str(&(ii+i)->bdaddr, addr);
@@ -88,9 +95,18 @@ int main(int argc, char **argv)
         printf("Querying friendly name for %s...\n", addr);
         memset(name, 0, sizeof(name));
         if (hci_read_remote_name(sock, &(ii+i)->bdaddr, sizeof(name), 
-                                 name, 0) < 0)
+                                 name, 0) < 0) {
             strcpy(name, "[unknown]");
-        printf("%s  %s\n", addr, name);
+        }
+        btc = (bt_class_t*)  &ii[i].dev_class[0];
+        printf("%s (0x%x, 0x%x, 0x%x, format=0x%x, major=0x%x, minor=0x%x) = %s\n", addr, 
+               ii[i].dev_class[0],
+               ii[i].dev_class[1],
+               ii[i].dev_class[2],
+               btc->format_type,
+               btc->major,
+               btc->minor,
+               name);
     }
 
     printtime();
