@@ -34,6 +34,8 @@ static int help_arg = 0;
 static int print_skips_arg = 0;
 static int delay_arg = 5; // seconds
 static int debug_arg = 0;
+static char csv_filename[4096] = { '\0' };
+static FILE *csv_output = NULL;
 
 static struct option options[] = {
 	{ "help",		0, &help_arg, 'h' },
@@ -41,6 +43,7 @@ static struct option options[] = {
 	{ "debug",		0, &debug_arg, 'D' },
         // Need to get values for the next two, so don't specify a
         // variable to fill
+	{ "filename",		1, 0, 'f' },
 	{ "delay",		1, 0, 'd' },
 	{ "address",		1, 0, 'a' },
 	{ 0, 0, 0, 0 }
@@ -191,7 +194,7 @@ static result_type_t record_result(int device, results_map_t &results)
 //
 // Loop through a map of results and print them all
 //
-static void print_results(int experiment_num, results_map_t &results)
+static void print_results(string label, int experiment_num, results_map_t &results)
 {
     D(printf("Printing results for experiment #%d...\n", experiment_num));
 
@@ -217,7 +220,8 @@ static void print_results(int experiment_num, results_map_t &results)
         }
 
         // Print it out
-        cout << experiment_num << "," 
+        cout << label << ","
+             << experiment_num << ","
              << addr << "," 
              << name << ","
              << count << "," 
@@ -226,6 +230,18 @@ static void print_results(int experiment_num, results_map_t &results)
              << last.tv_sec << "."
              << setfill('0') << setw(6) << last.tv_usec
              << endl;
+
+        if (NULL != csv_output) {
+            fprintf(csv_output, "%s,%u,%s,%s,%u,%u.%06u,%u.%06u\n",
+                    label.c_str(),
+                    experiment_num,
+                    addr.c_str(),
+                    name.c_str(),
+                    first.tv_sec,
+                    first.tv_usec,
+                    last.tv_sec,
+                    last.tv_usec);
+        }
     }
 }
 
@@ -274,6 +290,7 @@ static void experiment_loop(int device, uint8_t filter_type)
     while (0 == max_experiments || experiment_num <= max_experiments) {
         results_map_t results;
         long long last_good_result = 0;
+        string label = "Unknown";
 
         // Keep looping in this experiment until it is done
 	while (!time_for_next_experiment(!results.empty(), last_good_result)) {
@@ -283,27 +300,37 @@ static void experiment_loop(int device, uint8_t filter_type)
             struct timeval timeout;
 
             FD_ZERO(&fdset);
+            FD_SET(fileno(stdin), &fdset);
             FD_SET(device, &fdset);
             timeout.tv_sec = delay_arg;
             timeout.tv_usec = 0;
             int ret = select(device + 1, &fdset, NULL, NULL, &timeout);
 
             if (ret > 0) {
-                // If something was ready to read, process it
-                struct timeval tv;
-                result_type_t ret = record_result(device, results);
-                switch(ret) {
-                case RESULT_GOOD:
-                    gettimeofday(&tv, NULL);
-                    last_good_result = tv2long(tv);
-                    break;
+                // If something was ready on stdin, go read a line to
+                // label this experiment
+                if (FD_ISSET(fileno(stdin), &fdset)) {
+                    printf("Label for experiment: ");
+                    fflush(stdout);
+                    cin >> label;
+                    cout << "Got new label: " << label << endl;
+                } else {
+                    // If something was ready to read, process it
+                    struct timeval tv;
+                    result_type_t ret = record_result(device, results);
+                    switch(ret) {
+                    case RESULT_GOOD:
+                        gettimeofday(&tv, NULL);
+                        last_good_result = tv2long(tv);
+                        break;
 
-                case RESULT_BAD:
-                case RESULT_DONE:
-                    return;
+                    case RESULT_BAD:
+                    case RESULT_DONE:
+                        return;
 
-                case RESULT_SKIP:
-                    continue;
+                    case RESULT_SKIP:
+                        continue;
+                    }
                 }
             } else if (0 == ret) {
                 // If nothing was ready, and if we have some previous
@@ -334,9 +361,10 @@ static void experiment_loop(int device, uint8_t filter_type)
 
         // Setup for next experiment
         D(printf("Experiment %d done; looping to next...\n", experiment_num));
-        print_results(experiment_num, results);
+        print_results(label, experiment_num, results);
         results.clear();
         ++experiment_num;
+        label = "Unknown";
     }
 }
 
@@ -432,11 +460,12 @@ static void scan(int device)
 static void show_help(const string argv0)
 {
     cout << argv0 << " usage:" << endl << endl
-         << "--help         This help message" << endl
-         << "--print-skips  Print address of devices that are skipped" << endl
-         << "--delay N      Delay N seconds between experiments" << endl
-         << "--address X    Only monitor for address X (e.g., AA:BB:CC:DD:EE:FF)" << endl
-         << "--debug        Print debugging messages" << endl;
+         << "--help               This help message" << endl
+         << "--print-skips        Print address of devices that are skipped" << endl
+         << "--delay N            Delay N seconds between experiments" << endl
+         << "--address X          Only monitor for address X (e.g., AA:BB:CC:DD:EE:FF)" << endl
+         << "--filename FILENAME  Name the output CSV file" << endl
+         << "--debug              Print debugging messages" << endl;
 }
 
 
@@ -460,6 +489,10 @@ int main(int argc, char* argv[])
             D(printf("Got address: %s\n", good_address.c_str()));
             break;
 
+        case 'f':
+            strcpy(csv_filename, optarg);
+            break;
+
         case '?':
             show_help(argv[0]);
             exit(1);
@@ -469,6 +502,17 @@ int main(int argc, char* argv[])
     if (help_arg) {
         show_help(argv[0]);
         exit(0);
+    }
+
+    // If we got a output CSV filename, open it
+    if ('\0' != csv_filename[0]) {
+        csv_output = fopen(csv_filename, "w");
+        if (NULL == csv_output) {
+            fprintf(stderr, "Failed to open file: %s\n", csv_filename);
+            perror("fopen");
+            exit(1);
+        }
+        cout << "Writing output to file: " << csv_filename << endl;
     }
 
     device_id = hci_get_route(NULL);
@@ -484,6 +528,12 @@ int main(int argc, char* argv[])
     }
 
     scan(device);
+
+    // If we have an output file, close it
+    if (NULL != csv_output) {
+        fclose(csv_output);
+        cout << "Wrote output to filename: " << csv_filename << endl;
+    }
 
     return 0;
 }
