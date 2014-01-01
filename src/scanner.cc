@@ -146,7 +146,6 @@ static result_type_t record_result(int device, results_map_t &results)
     unsigned char buf[HCI_MAX_EVENT_SIZE], *ptr;
     evt_le_meta_event *meta;
     le_advertising_info *info;
-    struct timeval now;
     result_t result;
 
     // Read the result from the fd
@@ -232,15 +231,16 @@ static void print_results(string label, int experiment_num, results_map_t &resul
              << endl;
 
         if (NULL != csv_output) {
-            fprintf(csv_output, "%s,%u,%s,%s,%u,%u.%06u,%u.%06u\n",
+            fprintf(csv_output, "%s,%u,%s,%s,%d,%u.%06u,%u.%06u\n",
                     label.c_str(),
                     experiment_num,
                     addr.c_str(),
                     name.c_str(),
-                    first.tv_sec,
-                    first.tv_usec,
-                    last.tv_sec,
-                    last.tv_usec);
+                    count,
+                    (unsigned int) first.tv_sec,
+                    (unsigned int) first.tv_usec,
+                    (unsigned int) last.tv_sec,
+                    (unsigned int) last.tv_usec);
         }
     }
 }
@@ -377,7 +377,6 @@ static void run_experiments(int device, uint8_t filter_type)
     struct hci_filter nf, of;
     struct sigaction sa;
     socklen_t olen;
-    int len;
 
     // Get original flags
     olen = sizeof(of);
@@ -405,7 +404,6 @@ static void run_experiments(int device, uint8_t filter_type)
     // Call the main loop
     experiment_loop(device, filter_type);
 
-done:
     // Restore original flags
     setsockopt(device, SOL_HCI, HCI_FILTER, &of, sizeof(of));
 }
@@ -474,7 +472,7 @@ static void show_help(const string argv0)
 //
 int main(int argc, char* argv[])
 {
-    int device_id, device, i, ret = 0;
+    int device_id, device, i;
 
     while (-1 != (i = getopt_long(argc, argv, "", options, NULL))) {
         D(printf("Analyzing: 0x%x\n", i));
