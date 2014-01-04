@@ -44,8 +44,8 @@ static void printtime(void)
     elapsed_usec = (elapsed - elapsed_sec * 1000000);
 
     printf("%02u.%06u (elapsed: %02u.%06u): ",
-           now_sec, now_usec,
-           elapsed_sec, elapsed_usec);
+           (unsigned int) now_sec, (unsigned int) now_usec,
+           (unsigned int) elapsed_sec, (unsigned int) elapsed_usec);
 
     last_time = now;
     first = 0;
