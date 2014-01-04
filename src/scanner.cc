@@ -231,6 +231,12 @@ static void print_results(string label, int experiment_num, results_map_t &resul
              << endl;
 
         if (NULL != csv_output) {
+            static bool first_time = true;
+            if (first_time) {
+                fprintf(csv_output, "Experiment name,Experiment number,Device address,Device name,Count,First timestamp,Second timestamp\n");
+                first_time = false;
+            }
+
             fprintf(csv_output, "%s,%u,%s,%s,%d,%u.%06u,%u.%06u\n",
                     label.c_str(),
                     experiment_num,
