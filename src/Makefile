@@ -2,7 +2,7 @@ all: simpletest scanner
 
 CC = gcc
 CXX = g++
-CFLAGS = -g
+CFLAGS = -g -Wall
 LDFLAGS =
 LIBS = -lbluetooth
 
@@ -20,4 +20,4 @@ scanner: scanner.cc
 	$(CXX) $(CFLAGS) $< $(LDFLAGS) $(LIBS) -o $@
 
 clean:
-	rm -f simpletest scanner
+	rm -f simpletest scanner *~ *.o
