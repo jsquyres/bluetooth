@@ -4,6 +4,10 @@
       "idiom" : "universal",
       "scale" : "1x",
       "filename" : "ruby-slippers2048x1536.png"
+    },
+    {
+      "idiom" : "universal",
+      "scale" : "2x"
     }
   ],
   "info" : {
