@@ -1,0 +1,14 @@
+#!/bin/sh
+
+# Get the defaults
+. ./pivertise.conf
+
+HCICONFIG=`which hciconfig`
+HCITOOL=`which hcitool`
+
+# Stop LE advertising
+echo "Disabling pivertise..."
+sudo $HCICONFIG $BLUETOOTH_DEVICE noleadv
+
+echo "Complete"
+exit 0
