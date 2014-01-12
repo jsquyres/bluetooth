@@ -58,6 +58,7 @@
 		335C9B3E1882C87700EE8309 /* Ruby SlippersTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Ruby SlippersTests-Info.plist"; sourceTree = "<group>"; };
 		335C9B401882C87700EE8309 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		335C9B421882C87700EE8309 /* Ruby_SlippersTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Ruby_SlippersTests.m; sourceTree = "<group>"; };
+		335C9B4C1882C8D500EE8309 /* Ruby Slippers.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = "Ruby Slippers.entitlements"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -117,6 +118,7 @@
 		335C9B171882C87700EE8309 /* Ruby Slippers */ = {
 			isa = PBXGroup;
 			children = (
+				335C9B4C1882C8D500EE8309 /* Ruby Slippers.entitlements */,
 				335C9B201882C87700EE8309 /* BZAppDelegate.h */,
 				335C9B211882C87700EE8309 /* BZAppDelegate.m */,
 				335C9B231882C87700EE8309 /* Main_iPhone.storyboard */,
@@ -208,6 +210,17 @@
 				LastUpgradeCheck = 0500;
 				ORGANIZATIONNAME = "Wailing Banshees";
 				TargetAttributes = {
+					335C9B0D1882C87700EE8309 = {
+						DevelopmentTeam = G92RA7642W;
+						SystemCapabilities = {
+							com.apple.BackgroundModes = {
+								enabled = 1;
+							};
+							com.apple.iCloud = {
+								enabled = 0;
+							};
+						};
+					};
 					335C9B341882C87700EE8309 = {
 						TestTargetID = 335C9B0D1882C87700EE8309;
 					};
@@ -399,10 +412,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Ruby Slippers/Ruby Slippers-Prefix.pch";
 				INFOPLIST_FILE = "Ruby Slippers/Ruby Slippers-Info.plist";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -412,10 +428,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Ruby Slippers/Ruby Slippers-Prefix.pch";
 				INFOPLIST_FILE = "Ruby Slippers/Ruby Slippers-Info.plist";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;
