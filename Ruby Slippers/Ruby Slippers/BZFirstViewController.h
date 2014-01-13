@@ -10,4 +10,6 @@
 
 @interface BZFirstViewController : UIViewController
 
+-(void) printResults:(NSString*)label;
+
 @end
