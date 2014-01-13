@@ -9,8 +9,11 @@ HCITOOL=`which hcitool`
 # Start LE advertising
 echo "Launching pivertise..."
 sudo $HCICONFIG $BLUETOOTH_DEVICE up
+sudo $HCICONFIG $BLUETOOTH_DEVICE name $NAME
 sudo $HCICONFIG $BLUETOOTH_DEVICE noleadv
-sudo $HCITOOL -i hci0 cmd 0x08 0x0008 1e 02 01 1a 1a ff 4c 00 02 15 $UUID $MAJOR $MINOR $POWER 00 00 00 00 00 00 00 00 00 00 00 00 00
+sudo $HCICONFIG $BLUETOOTH_DEVICE noscan
+#sudo $HCITOOL -i hci0 cmd 0x08 0x0008 1e 02 01 1a 1a ff 4c 00 02 15 $UUID $MAJOR $MINOR $POWER 00 00 00 00 00 00 00 00 00 00 00 00 00
+sudo $HCITOOL -i hci0 cmd 0x08 0x0008 1e 02 02 01 1a ff 4c 00 02 15 $UUID $MAJOR $MINOR $POWER
 sudo $HCICONFIG $BLUETOOTH_DEVICE leadv 3
 
 echo "Complete"
