@@ -12,11 +12,11 @@
 
 #import "BZFirstViewController.h"
 
-@interface BZBLEController : UIViewController <CLLocationManagerDelegate>
+@interface BZBeacon: UIViewController <CLLocationManagerDelegate>
 
 @property (readonly) BOOL isScanning;
 
-- (BZBLEController*)init: (BZFirstViewController*)withController;
+- (BZBeacon*)init: (BZFirstViewController*)withController;
 
 - (void) startScanning;
 

@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		3335EFD91883526200C84E7D /* BZBLEController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3335EFD81883526200C84E7D /* BZBLEController.m */; };
+		3335EFD91883526200C84E7D /* BZBeacon.m in Sources */ = {isa = PBXBuildFile; fileRef = 3335EFD81883526200C84E7D /* BZBeacon.m */; };
 		3335EFDB188359F400C84E7D /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3335EFDA188359F400C84E7D /* CoreBluetooth.framework */; };
 		3335EFDD18835F8700C84E7D /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3335EFDC18835F8700C84E7D /* CoreLocation.framework */; };
 		335C9B121882C87700EE8309 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 335C9B111882C87700EE8309 /* Foundation.framework */; };
@@ -39,8 +39,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		3335EFD71883526200C84E7D /* BZBLEController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BZBLEController.h; sourceTree = "<group>"; };
-		3335EFD81883526200C84E7D /* BZBLEController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BZBLEController.m; sourceTree = "<group>"; };
+		3335EFD71883526200C84E7D /* BZBeacon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BZBeacon.h; sourceTree = "<group>"; };
+		3335EFD81883526200C84E7D /* BZBeacon.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BZBeacon.m; sourceTree = "<group>"; };
 		3335EFDA188359F400C84E7D /* CoreBluetooth.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreBluetooth.framework; path = System/Library/Frameworks/CoreBluetooth.framework; sourceTree = SDKROOT; };
 		3335EFDC18835F8700C84E7D /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
 		335C9B0E1882C87700EE8309 /* Ruby Slippers.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Ruby Slippers.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -132,8 +132,8 @@
 				335C9B4C1882C8D500EE8309 /* Ruby Slippers.entitlements */,
 				335C9B201882C87700EE8309 /* BZAppDelegate.h */,
 				335C9B211882C87700EE8309 /* BZAppDelegate.m */,
-				3335EFD71883526200C84E7D /* BZBLEController.h */,
-				3335EFD81883526200C84E7D /* BZBLEController.m */,
+				3335EFD71883526200C84E7D /* BZBeacon.h */,
+				3335EFD81883526200C84E7D /* BZBeacon.m */,
 				335C9B231882C87700EE8309 /* Main_iPhone.storyboard */,
 				335C9B261882C87700EE8309 /* Main_iPad.storyboard */,
 				335C9B291882C87700EE8309 /* BZFirstViewController.h */,
@@ -287,7 +287,7 @@
 			files = (
 				335C9B221882C87700EE8309 /* BZAppDelegate.m in Sources */,
 				335C9B2B1882C87700EE8309 /* BZFirstViewController.m in Sources */,
-				3335EFD91883526200C84E7D /* BZBLEController.m in Sources */,
+				3335EFD91883526200C84E7D /* BZBeacon.m in Sources */,
 				335C9B2E1882C87700EE8309 /* BZSecondViewController.m in Sources */,
 				335C9B1E1882C87700EE8309 /* main.m in Sources */,
 			);

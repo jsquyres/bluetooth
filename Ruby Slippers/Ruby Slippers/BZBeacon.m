@@ -6,27 +6,27 @@
 //  Copyright (c) 2014 Wailing Banshees. All rights reserved.
 //
 
-#import "BZBLEController.h"
+#import "BZBeacon.h"
 #import "BZFirstViewController.h"
 
-@interface BZBLEController ()
+@interface BZBeacon ()
 
-@property (strong, nonatomic) CLBeaconRegion *beaconRegion1;
-@property (strong, nonatomic) CLBeaconRegion *beaconRegion2;
+@property (strong, nonatomic) NSMutableDictionary *regions;
 @property (strong, nonatomic) CLLocationManager *locationManager;
 @property (strong, readonly) BZFirstViewController *viewController;
 
-- (void) printResults:(NSString*) results;
+- (void) printResults:(NSString*)results;
+- (void) createRegion:(NSString*)uuid withName:(NSString*)identifier;
 
 @end
 
-@implementation BZBLEController
+@implementation BZBeacon
 
 /////////////////////////////////////////////////////////////////////////////////////
 
-- (BZBLEController*) init: (BZFirstViewController*)withController
+- (BZBeacon*) init: (BZFirstViewController*)withController
 {
-    NSLog(@"Initializing the BZBLEController");
+    NSLog(@"Initializing the BZBeacon");
 
     _viewController = withController;
 
@@ -34,19 +34,27 @@
     self.locationManager = [[CLLocationManager alloc] init];
     self.locationManager.delegate = self;
 
-    // Create a region that we're looking for
-    NSUUID *uuid;
-    // Generated UUID from OS X "uuidgen" command
-    uuid = [[NSUUID alloc] initWithUUIDString:@"FADEBAAB-4D48-4868-B2C3-D98938F9DD74"];
-    self.beaconRegion1 = [[CLBeaconRegion alloc] initWithProximityUUID:uuid identifier:@"uuidgen"];
-    // From LightBlue
-    uuid = [[NSUUID alloc] initWithUUIDString:@"00B9AA32-3606-C646-4D69-1F579B17AC50"];
-    uuid = [[NSUUID alloc] initWithUUIDString:@"00B9AA32-3606-C646-4D69-1F579B17AC50"];
-    self.beaconRegion2 = [[CLBeaconRegion alloc] initWithProximityUUID:uuid identifier:@"lightblue"];
+    self.regions = [[NSMutableDictionary alloc] init];
 
-    [self.locationManager startMonitoringForRegion:self.beaconRegion1];
+    // Generated UUID from OS X "uuidgen" command
+    [self createRegion:@"FADEBAAB-4D48-4868-B2C3-D98938F9DD74" withName:@"uuidgen"];
+    // From LightBlue
+    [self createRegion:@"00B9AA32-3606-C646-4D69-1F579B17AC50" withName:@"lightblue"];
 
     return self;
+}
+
+- (void) createRegion:(NSString*)uuid withName:(NSString*)identifier
+{
+    // Create a region that we're looking for
+    NSUUID *newUuid = [[NSUUID alloc] initWithUUIDString:uuid];
+    CLBeaconRegion *region = [[CLBeaconRegion alloc] initWithProximityUUID:newUuid identifier:identifier];
+
+    // Start looking for it
+    [self.locationManager startMonitoringForRegion:region];
+
+    // Save in the dictionary
+    [self.regions setObject:region forKey:identifier];
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -59,12 +67,17 @@
     }
 
     NSLog(@"I'm starting to scan...");
-    [self.locationManager startMonitoringForRegion:self.beaconRegion1];
-    [self.locationManager startMonitoringForRegion:self.beaconRegion2];
+    for (id identifier in self.regions) {
+        CLBeaconRegion *region = [self.regions objectForKey:identifier];
+        NSLog(@"Scanning for %@ region...", identifier);
 
-    // For kicks, start determining the status of this region
-    [self.locationManager requestStateForRegion:self.beaconRegion1];
-    [self.locationManager requestStateForRegion:self.beaconRegion2];
+        // Start monitoring the region
+
+        [self.locationManager startMonitoringForRegion:region];
+
+        // For kicks, start determining the state of this region
+        [self.locationManager requestStateForRegion:region];
+    }
 
     _isScanning = TRUE;
 }
@@ -77,10 +90,14 @@
     }
 
     NSLog(@"I'm stopping scanning...");
-    [self.locationManager stopRangingBeaconsInRegion:self.beaconRegion1];
-    [self.locationManager stopMonitoringForRegion:self.beaconRegion1];
-    [self.locationManager stopRangingBeaconsInRegion:self.beaconRegion2];
-    [self.locationManager stopMonitoringForRegion:self.beaconRegion2];
+    for (id identifier in self.regions) {
+        CLBeaconRegion *region = [self.regions objectForKey:identifier];
+        NSLog(@"Stopping scanning for %@ region...", identifier);
+
+        [self.locationManager stopMonitoringForRegion:region];
+        [self.locationManager stopRangingBeaconsInRegion:region];
+    }
+
     _isScanning = FALSE;
 }
 

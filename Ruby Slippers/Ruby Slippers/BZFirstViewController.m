@@ -7,7 +7,7 @@
 //
 
 #import "BZFirstViewController.h"
-#import "BZBLEController.h"
+#import "BZBeacon.h"
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
@@ -19,7 +19,7 @@
 @property (weak, nonatomic) IBOutlet UISwitch *EnableBLEScanningSwitch;
 @property (weak, nonatomic) IBOutlet UILabel *EnableBLEScanningLabel;
 @property (weak, nonatomic) IBOutlet UITextView *ResultsLabel;
-@property BZBLEController *controller;
+@property BZBeacon *controller;
 
 - (void) enableUI;
 - (void) disableUI;
@@ -65,7 +65,7 @@
 
     // Allocate and initialize our BLE controller object
     if (Nil == _controller) {
-        _controller = [[BZBLEController alloc] init:self];
+        _controller = [[BZBeacon alloc] init:self];
     }
 
     [self EnableBLEScanning:self.EnableBLEScanningSwitch];
