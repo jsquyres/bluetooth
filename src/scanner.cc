@@ -340,14 +340,12 @@ static void experiment_loop(int device, uint8_t filter_type)
 {
     while (1) {
         results_map_t results;
-        string label;
 
-        // Get the label for this experiment
         ++experiment_num;
-	label = get_next_label();
-        D(cout << "Starting experiment " << label << endl);
+        D(cout << "Starting experiment" << experiment_num << endl);
 
-        // Keep looping in this experiment until it i
+        // Keep looping in this experiment until something appears on
+        // stdin
         while (1) {
 
             // Setup for the select
@@ -400,9 +398,7 @@ static void experiment_loop(int device, uint8_t filter_type)
         }
 
         // End the current experiment
-        D(cout << "Experiment " << experiment_num
-               << " done (" << label
-               << "); looping to next..." << endl);
+        D(cout << "Experiment " << experiment_num << " done" << endl);
         print_results(experiment_num, results);
         results.clear();
     }
