@@ -15,6 +15,8 @@
 #include <getopt.h>
 
 #include <iostream>
+#include <fstream>
+#include <sstream>
 #include <iomanip>
 #include <vector>
 #include <string>
@@ -29,33 +31,27 @@
 
 using namespace std;
 
-static int max_experiments = 0;
+static int experiment_num = 0;
 static int signal_received = -1;
 static string good_address;
 
 static int help_arg = 0;
 static int print_skips_arg = 0;
-static int delay_arg = 5; // seconds
 static int debug_arg = 0;
 static char csv_filename[4096] = { '\0' };
-static char web_dir[4096] = { '\0' };
-static bool have_web_dir = false;
-static bool web_msg_index = 0;
-static FILE *csv_output = NULL;
-static list < string > labels;
+static ofstream csv_output;
+static list<string> labels;
 
 static struct option options[] = {
-	{ "help",		0, &help_arg, 'h' },
-	{ "print-skips",	0, &print_skips_arg, 'p' },
-	{ "debug",		0, &debug_arg, 'D' },
-        // Need to get values for the next two, so don't specify a
-	// variable to fill
-	{ "filename",		1, 0, 'f' },
-	{ "delay",		1, 0, 'd' },
-	{ "address",		1, 0, 'a' },
-	{ "webdir",		1, 0, 'w' },
-	{ "labels",		1, 0, 'l' },
-	{ 0, 0, 0, 0 }
+    { "help",		0, &help_arg, 'h' },
+    { "print-skips",	0, &print_skips_arg, 'p' },
+    { "debug",		0, &debug_arg, 'D' },
+    // Need to get values for these, so don't specify a variable
+    // to fill
+    { "filename",	1, 0, 'f' },
+    { "address",	1, 0, 'a' },
+    { "labels",		1, 0, 'l' },
+    { 0, 0, 0, 0 }
 };
 
 
@@ -123,18 +119,6 @@ failed:
 
 
 //
-// Convert a struct timeval to a long long
-//
-static long long tv2long(struct timeval tv)
-{
-    long long ret = tv.tv_sec;
-    ret *= 1000000;
-    ret += tv.tv_usec;
-    return ret;
-}
-
-
-//
 // Handler for SIGINT
 //
 static void sigint_handler(int sig)
@@ -142,28 +126,6 @@ static void sigint_handler(int sig)
     // Just record the signal; we'll check for it/handle it in the
     // main loop
     signal_received = sig;
-}
-
-
-//
-// Write the next file into the web message directory
-//
-static void write_web_message(string msg)
-{
-  FILE *fp;
-  char *filename;
-
-  if (!have_web_dir) {
-    return;
-  }
-
-  asprintf(&filename, "%s/from-scanner-%d.txt", web_dir, web_msg_index++);
-  unlink(filename);
-  fp = fopen(filename, "w");
-  fprintf(fp, msg.c_str());
-  fclose(fp);
-  free(filename);
-  printf("Wrote web message: %s", msg.c_str());
 }
 
 
@@ -210,19 +172,11 @@ static result_type_t record_result(int device, results_map_t &results)
 
         D(cout << "Record result: " 
                << result.addr << " " << result.name << endl);
-	if (have_web_dir) {
-	  D(write_web_message("Record result: " + 
-			      ((string) result.addr) + " " +
-			      ((string) result.name) + "\n"));
-	}
         return RESULT_GOOD;
     }
 
     if (print_skips_arg) {
         cout << "Skipping: " << result.addr << endl;
-	if (have_web_dir) {
-	  write_web_message("Skipping: " + ((string) result.addr) + "\n");
-	}
     }
 
     return RESULT_SKIP;
@@ -232,7 +186,8 @@ static result_type_t record_result(int device, results_map_t &results)
 //
 // Loop through a map of results and print them all
 //
-static void print_results(string label, int experiment_num, results_map_t &results)
+static void print_results(string label, int experiment_num,
+                          results_map_t &results)
 {
     D(printf("Printing results for experiment #%d...\n", experiment_num));
 
@@ -257,106 +212,92 @@ static void print_results(string label, int experiment_num, results_map_t &resul
             }
         }
 
-        // Print it out
-        cout << label << ","
-             << experiment_num << ","
-             << addr << "," 
-             << name << ","
-             << count << "," 
-             << first.tv_sec << "."
-             << setfill('0') << setw(6) << first.tv_usec << ","
-             << last.tv_sec << "."
-             << setfill('0') << setw(6) << last.tv_usec
-             << endl;
+        // Render the result
+        ostringstream oss;
+        oss << label << ","
+            << experiment_num << ","
+            << addr << ","
+            << name << ","
+            << count << ","
+            << first.tv_sec << "."
+            << setfill('0') << setw(6) << first.tv_usec << ","
+            << last.tv_sec << "."
+            << setfill('0') << setw(6) << last.tv_usec
+            << endl;
+        string str = oss.str();
 
-        if (NULL != csv_output) {
+        // Output to stdout
+        cout << str;
+
+        // Output to the CSV file
+        if (csv_output.is_open()) {
             static bool first_time = true;
             if (first_time) {
-                fprintf(csv_output, "Experiment name,Experiment number,Device address,Device name,Count,First timestamp,Second timestamp\n");
+                csv_output << "Experiment name,Experiment number,"
+                           << "Device address,Device name,Count,"
+                           << "First timestamp,Second timestamp" << endl;
                 first_time = false;
             }
 
-            fprintf(csv_output, "%s,%u,%s,%s,%d,%u.%06u,%u.%06u\n",
-                    label.c_str(),
-                    experiment_num,
-                    addr.c_str(),
-                    name.c_str(),
-                    count,
-                    (unsigned int) first.tv_sec,
-                    (unsigned int) first.tv_usec,
-                    (unsigned int) last.tv_sec,
-                    (unsigned int) last.tv_usec);
+            csv_output << str;
+        }
+    }
+}
+
+
+//
+// Check to see if there's anything to read on stdin.  If there is,
+// and it's not a blank line, then use that as the next label.
+//
+static void check_stdin(void)
+{
+    char input[4096];
+    fd_set fdset;
+    FD_ZERO(&fdset);
+    struct timeval tv = { 0, 0 };
+
+    FD_SET(fileno(stdin), &fdset);
+    int ret = select(fileno(stdin) + 1, &fdset, NULL, NULL, &tv);
+
+    // If there's something to read, do so
+    if (1 == ret) {
+        memset(input, '\0', sizeof(input));
+        fgets(input, sizeof(input) - 1, stdin);
+        if (input[strlen(input) - 1] == '\n') {
+            input[strlen(input) - 1] = '\0';
         }
 
-	if (have_web_dir) {
-	  char *msg;
-
-	  asprintf(&msg, "%s,%u,%s,%s,%d,%u.%06u,%u.%06u\n",
-                    label.c_str(),
-                    experiment_num,
-                    addr.c_str(),
-                    name.c_str(),
-                    count,
-                    (unsigned int) first.tv_sec,
-                    (unsigned int) first.tv_usec,
-                    (unsigned int) last.tv_sec,
-                    (unsigned int) last.tv_usec);
-	  write_web_message(msg);
-	  free(msg);
-	}
+        // If we didn't read a blank line, save it as the next label
+        if (input[0] != '\0') {
+            D(cout << "Got new label: " << input << endl);
+            labels.push_front(input);
+        }
     }
 }
 
 
 //
-// Determine if it has been <delay_arg> seconds since the last good
-// result was collected
-//
-static bool time_for_next_experiment(bool have_results,
-                                     long long last_good_result)
-{
-    // If we have some results and our last good result was
-    // more than delay_arg seconds ago, then
-    // end this experiment and go on to the next */
-    if (!have_results) {
-        return false;
-    }
-
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-
-    long long now = tv2long(tv);
-    long long time_for_next = last_good_result + delay_arg * 1000000;
-    D(printf("We have results:\n"
-             "\ttime for next: %llu\n"
-             "\tnow:           %llu\n",
-             time_for_next, now));
-
-    if (now > time_for_next) {
-        D(printf("*** Time for next experiment!\n"));
-        return true;
-    }
-
-    return false;
-}
-
-
-//
-// Get the next label
+// Remove the next label from the list of labels and set it as the
+// current label
 //
 static string get_next_label(void)
 {
-  if (labels.size() == 0) {
-    return (string) "Unknown";
-  }
-  
-  string label = labels.front();
-  labels.pop_front();
-  string msg = "Got next label " + label + "\n";
-  D(cout << msg << endl);
-  D(write_web_message(msg));
+    string label;
 
-  return label;
+    check_stdin();
+
+    if (labels.empty()) {
+        ostringstream ostr;
+        ostr << "Experiment " << experiment_num;
+        label = ostr.str();
+    } else {
+        label = labels.front();
+        labels.pop_front();
+    }
+
+    D(cout << "Got next experiment label " << label << endl);
+
+    return label;
 }
 
 
@@ -365,48 +306,37 @@ static string get_next_label(void)
 //
 static void experiment_loop(int device, uint8_t filter_type)
 {
-    int experiment_num;
-
-    experiment_num = 1;
-    while (0 == max_experiments || experiment_num <= max_experiments) {
+    while (1) {
         results_map_t results;
-        long long last_good_result = 0;
         string label;
 
+        // Get the label for this experiment
+        ++experiment_num;
 	label = get_next_label();
+        D(cout << "Starting experiment " << label << endl);
 
-        // Keep looping in this experiment until it is done
-	while (!time_for_next_experiment(!results.empty(), last_good_result)) {
+        // Keep looping in this experiment until it i
+        while (1) {
 
             // Setup for the select
             fd_set fdset;
-            struct timeval timeout;
-
             FD_ZERO(&fdset);
             FD_SET(fileno(stdin), &fdset);
             FD_SET(device, &fdset);
-            timeout.tv_sec = delay_arg;
-            timeout.tv_usec = 0;
-            int ret = select(device + 1, &fdset, NULL, NULL, &timeout);
+            int ret = select(device + 1, &fdset, NULL, NULL, NULL);
 
             if (ret > 0) {
-                // If something was ready on stdin, go read a line to
-                // label this experiment
+                // If something was ready on stdin, end the experiment
                 if (FD_ISSET(fileno(stdin), &fdset)) {
-                    string l;
-                    printf("Label for experiment: ");
-                    fflush(stdout);
-                    cin >> l;
-                    cout << "Got new label: " << l << endl;
-		    labels.push_back(label);
-                } else {
-                    // If something was ready to read, process it
-                    struct timeval tv;
+                    break;
+                }
+
+                // Otherwise, there was something ready to read from
+                // the device
+                else {
                     result_type_t ret = record_result(device, results);
                     switch(ret) {
                     case RESULT_GOOD:
-                        gettimeofday(&tv, NULL);
-                        last_good_result = tv2long(tv);
                         break;
 
                     case RESULT_BAD:
@@ -416,13 +346,6 @@ static void experiment_loop(int device, uint8_t filter_type)
                     case RESULT_SKIP:
                         continue;
                     }
-                }
-            } else if (0 == ret) {
-                // If nothing was ready, and if we have some previous
-                // results, then end this experiment and go on to the
-                // next
-                if (!results.empty()) {
-                    break;
                 }
             } else {
                 // Otherwise, there was an error.  Did someone hit
@@ -438,17 +361,18 @@ static void experiment_loop(int device, uint8_t filter_type)
                 }
 
                 // It was some other kind of error; we should probably
-                // just abourt
+                // just abort
                 perror("select failed");
                 exit(1);
             }
         }
 
-        // Setup for next experiment
-        D(printf("Experiment %d done; looping to next...\n", experiment_num));
+        // End the current experiment
+        D(cout << "Experiment " << experiment_num
+               << " done (" << label
+               << "); looping to next..." << endl);
         print_results(label, experiment_num, results);
         results.clear();
-        ++experiment_num;
     }
 }
 
@@ -537,24 +461,6 @@ static void scan(int device)
 
 
 //
-// Break the labels into a comma-separated list and load them into a vector
-//
-static void load_labels(char *arg)
-{
-  int i;
-  char **tokens;
-
-  tokens = opal_argv_split_inter(arg, ',', 0);
-  for (i = 0; tokens[i] != NULL; ++i) {
-    cout << "Saving label: " << tokens[i] << endl;
-    labels.push_back(tokens[i]);
-  }
-
-  // JMS I know this leaks memory.  Will fix later...
-}
-
-
-//
 // Print the help message
 //
 static void show_help(const string argv0)
@@ -562,10 +468,8 @@ static void show_help(const string argv0)
     cout << argv0 << " usage:" << endl << endl
          << "--help               This help message" << endl
          << "--print-skips        Print address of devices that are skipped" << endl
-         << "--delay N            Delay N seconds between experiments" << endl
          << "--address X          Only monitor for address X (e.g., AA:BB:CC:DD:EE:FF)" << endl
          << "--filename FILENAME  Name the output CSV file" << endl
-         << "--webdir DIRNAME     Name of the directory for the web messag files" << endl
          << "--labels LBL1,LBL2,... List of labels to use" << endl
          << "--debug              Print debugging messages" << endl;
 }
@@ -581,11 +485,6 @@ int main(int argc, char* argv[])
     while (-1 != (i = getopt_long(argc, argv, "", options, NULL))) {
         D(printf("Analyzing: 0x%x\n", i));
         switch(i) {
-        case 'd':
-            delay_arg = atoi(optarg);
-            D(printf("Got delay: %d\n", delay_arg));
-            break;
-
         case 'a':
             good_address = optarg;
             D(printf("Got address: %s\n", good_address.c_str()));
@@ -593,15 +492,11 @@ int main(int argc, char* argv[])
 
         case 'f':
             strcpy(csv_filename, optarg);
-            break;
-
-        case 'w':
-            strcpy(web_dir, optarg);
-	    have_web_dir = true;
+            D(printf("Got CSV filename: %s\n", csv_filename));
             break;
 
 	case 'l':
-            load_labels(optarg);
+            labels = opal_argv_split_inter(optarg, ',', 0);
             break;
 
         case '?':
@@ -617,8 +512,8 @@ int main(int argc, char* argv[])
 
     // If we got a output CSV filename, open it
     if ('\0' != csv_filename[0]) {
-        csv_output = fopen(csv_filename, "w");
-        if (NULL == csv_output) {
+        csv_output.open(csv_filename, ios::out);
+        if (!csv_output.is_open()) {
             fprintf(stderr, "Failed to open file: %s\n", csv_filename);
             perror("fopen");
             exit(1);
@@ -626,6 +521,7 @@ int main(int argc, char* argv[])
         cout << "Writing output to file: " << csv_filename << endl;
     }
 
+    // Open up the device
     device_id = hci_get_route(NULL);
     if (device_id < 0) {
         perror("Could not hci_get_route");
@@ -638,11 +534,12 @@ int main(int argc, char* argv[])
         exit(1);
     }
 
+    // Do the scans
     scan(device);
 
     // If we have an output file, close it
-    if (NULL != csv_output) {
-        fclose(csv_output);
+    if (csv_output.is_open()) {
+        csv_output.close();
         cout << "Wrote output to filename: " << csv_filename << endl;
     }
 
