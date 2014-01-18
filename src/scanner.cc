@@ -1,7 +1,7 @@
 //
 // Scanner tool for science experiments
 //
-// Jeff Squyres (c) 2013
+// Jeff Squyres (c) 2013-2014
 //
 // Strongly influenced by hcitool.c from the bluez toolkit.
 //
@@ -24,6 +24,8 @@
 #include <bluetooth/hci.h>
 #include <bluetooth/hci_lib.h>
 
+#include "argv.h"
+
 using namespace std;
 
 static int max_experiments = 0;
@@ -35,7 +37,11 @@ static int print_skips_arg = 0;
 static int delay_arg = 5; // seconds
 static int debug_arg = 0;
 static char csv_filename[4096] = { '\0' };
+static char web_dir[4096] = { '\0' };
+static bool have_web_dir = false;
+static bool web_msg_index = 0;
 static FILE *csv_output = NULL;
+static vector < string > labels;
 
 static struct option options[] = {
 	{ "help",		0, &help_arg, 'h' },
@@ -46,6 +52,8 @@ static struct option options[] = {
 	{ "filename",		1, 0, 'f' },
 	{ "delay",		1, 0, 'd' },
 	{ "address",		1, 0, 'a' },
+	{ "webdir",		1, 0, 'w' },
+	{ "labels",		1, 0, 'l' },
 	{ 0, 0, 0, 0 }
 };
 
@@ -137,6 +145,28 @@ static void sigint_handler(int sig)
 
 
 //
+// Write the next file into the web message directory
+//
+static void write_web_message(string msg)
+{
+  FILE *fp;
+  char *filename;
+
+  if (!have_web_dir) {
+    return;
+  }
+
+  asprintf(&filename, "%s/from-scanner-%d.txt", web_dir, web_msg_index++);
+  unlink(filename);
+  fp = fopen(filename, "w");
+  fprintf(fp, msg.c_str());
+  fclose(fp);
+  free(filename);
+  printf("Wrote web message: %s", msg.c_str());
+}
+
+
+//
 // Read the data from a evt_le_meta_event and record it in the results
 // map (if it's the type we want and it matches the good_address)
 //
@@ -179,11 +209,19 @@ static result_type_t record_result(int device, results_map_t &results)
 
         D(cout << "Record result: " 
                << result.addr << " " << result.name << endl);
+	if (have_web_dir) {
+	  D(write_web_message("Record result: " + 
+			      ((string) result.addr) + " " +
+			      ((string) result.name) + "\n"));
+	}
         return RESULT_GOOD;
     }
 
     if (print_skips_arg) {
         cout << "Skipping: " << result.addr << endl;
+	if (have_web_dir) {
+	  write_web_message("Skipping: " + ((string) result.addr) + "\n");
+	}
     }
 
     return RESULT_SKIP;
@@ -248,6 +286,23 @@ static void print_results(string label, int experiment_num, results_map_t &resul
                     (unsigned int) last.tv_sec,
                     (unsigned int) last.tv_usec);
         }
+
+	if (have_web_dir) {
+	  char *msg;
+
+	  asprintf(&msg, "%s,%u,%s,%s,%d,%u.%06u,%u.%06u\n",
+                    label.c_str(),
+                    experiment_num,
+                    addr.c_str(),
+                    name.c_str(),
+                    count,
+                    (unsigned int) first.tv_sec,
+                    (unsigned int) first.tv_usec,
+                    (unsigned int) last.tv_sec,
+                    (unsigned int) last.tv_usec);
+	  write_web_message(msg);
+	  free(msg);
+	}
     }
 }
 
@@ -459,6 +514,24 @@ static void scan(int device)
 
 
 //
+// Break the labels into a comma-separated list and load them into a vector
+//
+static void load_labels(char *arg)
+{
+  int i;
+  char **tokens;
+
+  tokens = opal_argv_split_inter(arg, ',', 0);
+  for (i = 0; tokens[i] != NULL; ++i) {
+    cout << "Saving label: " << tokens[i] << endl;
+    labels.push_back(tokens[i]);
+  }
+
+  // JMS I know this leaks memory.  Will fix later...
+}
+
+
+//
 // Print the help message
 //
 static void show_help(const string argv0)
@@ -469,6 +542,8 @@ static void show_help(const string argv0)
          << "--delay N            Delay N seconds between experiments" << endl
          << "--address X          Only monitor for address X (e.g., AA:BB:CC:DD:EE:FF)" << endl
          << "--filename FILENAME  Name the output CSV file" << endl
+         << "--webdir DIRNAME     Name of the directory for the web messag files" << endl
+         << "--labels LBL1,LBL2,... List of labels to use" << endl
          << "--debug              Print debugging messages" << endl;
 }
 
@@ -495,6 +570,15 @@ int main(int argc, char* argv[])
 
         case 'f':
             strcpy(csv_filename, optarg);
+            break;
+
+        case 'w':
+            strcpy(web_dir, optarg);
+	    have_web_dir = true;
+            break;
+
+	case 'l':
+            load_labels(optarg);
             break;
 
         case '?':
