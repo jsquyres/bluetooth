@@ -25,7 +25,7 @@ argv.o: argv.cc
 scanner.o: scanner.cc
 
 scanner: scanner.o argv.o
-	$(CXX) $(CXXFLAGS) $? $(LDFLAGS) $(LIBS) -o $@
+	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) $(LIBS) -o $@
 
 clean:
 	rm -f simpletest scanner *~ *.o
