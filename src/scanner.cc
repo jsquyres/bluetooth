@@ -184,68 +184,6 @@ static result_type_t record_result(int device, results_map_t &results)
 
 
 //
-// Loop through a map of results and print them all
-//
-static void print_results(string label, int experiment_num,
-                          results_map_t &results)
-{
-    D(printf("Printing results for experiment #%d...\n", experiment_num));
-
-    results_map_t::iterator i;
-    for (i = results.begin(); i != results.end(); ++i) {
-        string addr = i->first;
-        
-        int count = i->second.size();
-        struct timeval first = i->second.front().timestamp;
-        struct timeval last = i->second.back().timestamp;
-
-        // Find a non "unknown" name
-        results_t::iterator j;
-        string name = i->second.begin()->name;
-        name = "unknown";
-        if (name == "unknown") {
-            for (j = i->second.begin(); j != i->second.end(); ++j) {
-                if (j->name != "unknown") {
-                    name = j->name;
-                    break;
-                }
-            }
-        }
-
-        // Render the result
-        ostringstream oss;
-        oss << label << ","
-            << experiment_num << ","
-            << addr << ","
-            << name << ","
-            << count << ","
-            << first.tv_sec << "."
-            << setfill('0') << setw(6) << first.tv_usec << ","
-            << last.tv_sec << "."
-            << setfill('0') << setw(6) << last.tv_usec
-            << endl;
-        string str = oss.str();
-
-        // Output to stdout
-        cout << str;
-
-        // Output to the CSV file
-        if (csv_output.is_open()) {
-            static bool first_time = true;
-            if (first_time) {
-                csv_output << "Experiment name,Experiment number,"
-                           << "Device address,Device name,Count,"
-                           << "First timestamp,Second timestamp" << endl;
-                first_time = false;
-            }
-
-            csv_output << str;
-        }
-    }
-}
-
-
-//
 // Check to see if there's anything to read on stdin.  If there is,
 // and it's not a blank line, then use that as the next label.
 //
@@ -298,6 +236,100 @@ static string get_next_label(void)
     D(cout << "Got next experiment label " << label << endl);
 
     return label;
+}
+
+
+//
+// Output the first line of the CSV file, with the column headings
+//
+static void output_csv_first_line(void)
+{
+    static bool first_time = true;
+    if (first_time && csv_output.is_open()) {
+        csv_output << "Experiment name,Experiment number,"
+                   << "Device address,Device name,Count,"
+                   << "First timestamp,Second timestamp" << endl;
+        first_time = false;
+    }
+}
+
+
+//
+// Loop through a map of results and print them all
+//
+static void print_results(int experiment_num, results_map_t &results)
+{
+    ostringstream oss;
+    string str, label;
+
+    // Get the label to print for this experiment
+    label = get_next_label();
+
+    D(cout << "Printing results for experiment #" << experiment_num
+           << " (" << label << ")" << endl);
+
+    // If we have no results to print, then print a "zero line"
+    if (results.empty()) {
+        oss << label << ","
+            << experiment_num << ","
+            << "00:00:00:00:00:00,no-device-seen,0,0.0,0.0" << endl;
+        str = oss.str();
+
+        // Output to stdout
+        cout << str;
+
+        // Output to the CSV file
+        if (csv_output.is_open()) {
+            output_csv_first_line();
+            csv_output << str;
+        }
+
+        return;
+    }
+
+    // Otherwise, iterate and print all the results
+    results_map_t::iterator i;
+    for (i = results.begin(); i != results.end(); ++i) {
+        string addr = i->first;
+        int count = i->second.size();
+        struct timeval first = i->second.front().timestamp;
+        struct timeval last = i->second.back().timestamp;
+
+        // Find a non "unknown" name
+        results_t::iterator j;
+        string name = i->second.begin()->name;
+        name = "unknown";
+        if (name == "unknown") {
+            for (j = i->second.begin(); j != i->second.end(); ++j) {
+                if (j->name != "unknown") {
+                    name = j->name;
+                    break;
+                }
+            }
+        }
+
+        // Render the result
+        oss << label << ","
+            << experiment_num << ","
+            << addr << ","
+            << name << ","
+            << count << ","
+            << first.tv_sec << "."
+            << setfill('0') << setw(6) << first.tv_usec << ","
+            << last.tv_sec << "."
+            << setfill('0') << setw(6) << last.tv_usec
+            << endl;
+        str = oss.str();
+
+        // Output to stdout
+        cout << str;
+
+        // Output to the CSV file
+        if (csv_output.is_open()) {
+            output_csv_first_line();
+            csv_output << str;
+        }
+    }
 }
 
 
@@ -371,7 +403,7 @@ static void experiment_loop(int device, uint8_t filter_type)
         D(cout << "Experiment " << experiment_num
                << " done (" << label
                << "); looping to next..." << endl);
-        print_results(label, experiment_num, results);
+        print_results(experiment_num, results);
         results.clear();
     }
 }
