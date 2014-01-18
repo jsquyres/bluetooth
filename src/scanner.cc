@@ -19,6 +19,7 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <list>
 
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/hci.h>
@@ -41,14 +42,14 @@ static char web_dir[4096] = { '\0' };
 static bool have_web_dir = false;
 static bool web_msg_index = 0;
 static FILE *csv_output = NULL;
-static vector < string > labels;
+static list < string > labels;
 
 static struct option options[] = {
 	{ "help",		0, &help_arg, 'h' },
 	{ "print-skips",	0, &print_skips_arg, 'p' },
 	{ "debug",		0, &debug_arg, 'D' },
         // Need to get values for the next two, so don't specify a
-        // variable to fill
+	// variable to fill
 	{ "filename",		1, 0, 'f' },
 	{ "delay",		1, 0, 'd' },
 	{ "address",		1, 0, 'a' },
@@ -341,6 +342,25 @@ static bool time_for_next_experiment(bool have_results,
 
 
 //
+// Get the next label
+//
+static string get_next_label(void)
+{
+  if (labels.size() == 0) {
+    return (string) "Unknown";
+  }
+  
+  string label = labels.front();
+  labels.pop_front();
+  string msg = "Got next label " + label + "\n";
+  D(cout << msg << endl);
+  D(write_web_message(msg));
+
+  return label;
+}
+
+
+//
 // Main experiment loop
 //
 static void experiment_loop(int device, uint8_t filter_type)
@@ -351,7 +371,9 @@ static void experiment_loop(int device, uint8_t filter_type)
     while (0 == max_experiments || experiment_num <= max_experiments) {
         results_map_t results;
         long long last_good_result = 0;
-        string label = "Unknown";
+        string label;
+
+	label = get_next_label();
 
         // Keep looping in this experiment until it is done
 	while (!time_for_next_experiment(!results.empty(), last_good_result)) {
@@ -371,10 +393,12 @@ static void experiment_loop(int device, uint8_t filter_type)
                 // If something was ready on stdin, go read a line to
                 // label this experiment
                 if (FD_ISSET(fileno(stdin), &fdset)) {
+                    string l;
                     printf("Label for experiment: ");
                     fflush(stdout);
-                    cin >> label;
-                    cout << "Got new label: " << label << endl;
+                    cin >> l;
+                    cout << "Got new label: " << l << endl;
+		    labels.push_back(label);
                 } else {
                     // If something was ready to read, process it
                     struct timeval tv;
@@ -425,7 +449,6 @@ static void experiment_loop(int device, uint8_t filter_type)
         print_results(label, experiment_num, results);
         results.clear();
         ++experiment_num;
-        label = "Unknown";
     }
 }
 

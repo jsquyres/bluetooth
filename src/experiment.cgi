@@ -20,7 +20,6 @@ opendir(my $dh, $msg_dir) || die "can't opendir $msf_dir: $!";
 my @files_to_read = sort(grep { /^from-scanner/ && -f "$msg_dir/$_" } readdir($dh));
 closedir $dh;
 
-print "Hello world\n";
 print "<p>Output from scanner:\n
 <pre>\n";
 foreach my $file (@files_to_read) {
