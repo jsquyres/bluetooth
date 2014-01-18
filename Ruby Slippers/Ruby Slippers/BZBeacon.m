@@ -37,15 +37,13 @@
     self.regions = [[NSMutableDictionary alloc] init];
 
     // Generated UUID from OS X "uuidgen" command
-    [self createRegion:@"FADEBAAB-4D48-4868-B2C3-D98938F9DD74" withName:@"uuidgen"];
+    [self createRegion:@"FADEBAAB-4D48-4868-B2C3-D98938F9DD74" withName:@"uuidgen-new"];
     // From LightBlue, originally
     [self createRegion:@"00B9AA32-3606-C646-4D69-1F579B17AC50" withName:@"lightblue-1"];
     // From LightBlue, Jan 18 2014
     [self createRegion:@"7d83899c-e72b-e451-95a9-0ad04c9e624f" withName:@"lightblue-2"];
-    // Apple's iBeacon uuid
+    // RadiusNetworks / Apple's iBeacon uuid
     [self createRegion:@"e2c56db5-dffb-48d2-b060-d0f5a71096e0" withName:@"apple-ibeacon"];
-    // Radiusnetworks uuid
-    [self createRegion:@"E2C56DB5-DFFB-48D2-B060-D0F5A71096E0" withName:@"RadiusNetworks"];
 
     return self;
 }
@@ -54,7 +52,13 @@
 {
     // Create a region that we're looking for
     NSUUID *newUuid = [[NSUUID alloc] initWithUUIDString:uuid];
+    if (NULL == newUuid) {
+        NSLog(@"Got NULL UUID! %@", identifier);
+    }
     CLBeaconRegion *region = [[CLBeaconRegion alloc] initWithProximityUUID:newUuid identifier:identifier];
+    if (NULL == region) {
+        NSLog(@"Got NULL region back when created region! %@", identifier);
+    }
 
     // Start looking for it
     [self.locationManager startMonitoringForRegion:region];
