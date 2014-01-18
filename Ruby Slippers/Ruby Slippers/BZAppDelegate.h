@@ -10,6 +10,6 @@
 
 @interface BZAppDelegate : UIResponder <UIApplicationDelegate>
 
-@property (strong, nonatomic) UIWindow *window;
+@property (strong, atomic) UIWindow *window;
 
 @end

@@ -11,9 +11,9 @@
 
 @interface BZBeacon ()
 
-@property (strong, nonatomic) NSMutableDictionary *regions;
-@property (strong, nonatomic) CLLocationManager *locationManager;
-@property (strong, readonly) BZFirstViewController *viewController;
+@property (strong, atomic) NSMutableDictionary *regions;
+@property (strong, atomic) CLLocationManager *locationManager;
+@property (strong, atomic) BZFirstViewController *viewController;
 
 - (void) printResults:(NSString*)results;
 - (void) createRegion:(NSString*)uuid withName:(NSString*)identifier;
@@ -38,8 +38,14 @@
 
     // Generated UUID from OS X "uuidgen" command
     [self createRegion:@"FADEBAAB-4D48-4868-B2C3-D98938F9DD74" withName:@"uuidgen"];
-    // From LightBlue
-    [self createRegion:@"00B9AA32-3606-C646-4D69-1F579B17AC50" withName:@"lightblue"];
+    // From LightBlue, originally
+    [self createRegion:@"00B9AA32-3606-C646-4D69-1F579B17AC50" withName:@"lightblue-1"];
+    // From LightBlue, Jan 18 2014
+    [self createRegion:@"7d83899c-e72b-e451-95a9-0ad04c9e624f" withName:@"lightblue-2"];
+    // Apple's iBeacon uuid
+    [self createRegion:@"e2c56db5-dffb-48d2-b060-d0f5a71096e0" withName:@"apple-ibeacon"];
+    // Radiusnetworks uuid
+    [self createRegion:@"E2C56DB5-DFFB-48D2-B060-D0F5A71096E0" withName:@"RadiusNetworks"];
 
     return self;
 }
