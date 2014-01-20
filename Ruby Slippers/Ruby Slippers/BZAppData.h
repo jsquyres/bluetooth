@@ -7,13 +7,20 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <CoreLocation/CoreLocation.h>
 
-#import "BZController.h"
+@class BZController;
+@class BZScanStatus;
 
 @interface BZAppData : NSObject
 
-@property (nonatomic, retain) BZController *controller;
+@property (atomic, strong) BZController *controller;
+@property (atomic, strong) NSMutableArray *scanStatus;
 
 + (id)sharedAppData;
+
+- (void) addScanStatus:(NSString*)name withRegion:(CLBeaconRegion*)region;
+- (BZScanStatus*)getStatusByName:(NSString*)name;
+- (BZScanStatus*)getStatusByUUID:(NSString*)name;
 
 @end

@@ -12,6 +12,6 @@
 @interface BZTableViewController : UITableViewController <UITableViewDataSource, ControllerNotify>
 
 -(void) setStatus:(NSString*) status;
--(void) setIDStatus:(NSString*)identifier withRegion:(CLBeaconRegion*)region withStatus:(NSString*)status;
+-(void) reloadScanStatus;
 
 @end

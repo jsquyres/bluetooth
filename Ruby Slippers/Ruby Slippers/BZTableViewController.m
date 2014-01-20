@@ -8,12 +8,13 @@
 
 #import "BZTableViewController.h"
 #import "BZAppData.h"
-#import "BZTableRow.h"
+#import "BZScanStatus.h"
 
 @interface BZTableViewController ()
 
-@property (weak, nonatomic) BZAppData *appData;
-@property (strong, atomic) NSMutableArray *rows;
+@property (atomic, weak) BZAppData *appData;
+
+@property (atomic, strong) NSMutableArray *rows;
 @property (atomic) BOOL initialized;
 
 @end
@@ -32,7 +33,6 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-
 
     // First time through, get the shared data
     static dispatch_once_t onceToken;
@@ -66,25 +66,39 @@
     return 1;
 }
 
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+- (NSInteger)tableView:(UITableView *)tableView
+ numberOfRowsInSection:(NSInteger)section
 {
-    // Return the number of rows in the section.
-    return [self.rows count];
+    NSLog(@"Returning %lu rows...", (unsigned long)[_appData.scanStatus count]);
+
+    // Return the number of regions in the shared data
+    return [_appData.scanStatus count];
 }
 
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+- (UITableViewCell *)tableView:(UITableView *)tableView
+         cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     static NSString *CellIdentifier = @"row";
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier forIndexPath:indexPath];
 
-    BZTableRow *row = [self.rows objectAtIndex:indexPath.row];
-    cell.textLabel.text = [NSString stringWithFormat:@"%@: %@", row.identifier, row.status];
-    cell.detailTextLabel.text = [NSString stringWithFormat:@"UUID:%@, major:%@, minor:%@)", row.region.proximityUUID.UUIDString, row.region.major, row.region.minor];
+    BZScanStatus *status = _appData.scanStatus[indexPath.row];
+    cell.textLabel.text = [NSString stringWithFormat:@"%@ (%@,%@)",
+                           status.name, status.scanning, status.status];
+
+    NSString *uuidString = [status.region.proximityUUID.UUIDString substringToIndex:8];
+    cell.detailTextLabel.text = [NSString stringWithFormat:@"UUID:%@, m/m:%@/%@)",
+                                 uuidString,
+                                 status.region.major,
+                                 status.region.minor];
+
+    NSLog(@"Rendering row %lda: %@", (long)indexPath.row, cell.textLabel.text);
+    NSLog(@"Rendering row %ldb: %@", (long)indexPath.row, cell.detailTextLabel.text);
 
     return cell;
 }
 
-- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
+- (NSString *)tableView:(UITableView *)tableView
+titleForHeaderInSection:(NSInteger)section
 {
     return @"Beacons by identifier";
 }
@@ -108,37 +122,11 @@
 }
 
 // Set the status message for a specific beacon
--(void) setIDStatus:(NSString*)identifier withRegion:(CLBeaconRegion*)region withStatus:(NSString*)status;
+-(void) reloadScanStatus
 {
-    // Look through the rows array and see if we have this identifier already
-    BOOL found = false;
-    for (BZTableRow *row in _rows) {
-        if (row.identifier == identifier) {
-            found = true;
-            row.region = region;
-            row.status = status;
-            NSLog(@"Updated old row");
-        }
-    }
-
-    if (!found) {
-        BZTableRow *row = [BZTableRow alloc];
-        row.identifier = identifier;
-        row.region = region;
-        row.status = status;
-        [_rows addObject:row];
-        NSLog(@"Added new row! Now have %lu rows", (unsigned long) [_rows count]);
-    }
-
     // If the table has been initialized, then go ahead and re-draw it
     if (_initialized) {
-        // Make the table re-draw with the new data
-        // Fun way (animated)
-        NSIndexPath *indexPath = [NSIndexPath indexPathForRow:([_rows count] - 1) inSection:0];
-        [self.tableView insertRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
-
-        // Boring way (no animation)
-        //[self.tableView reloadData];
+        [self.tableView reloadData];
     }
 }
 

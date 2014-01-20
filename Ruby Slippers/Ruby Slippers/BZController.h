@@ -9,9 +9,11 @@
 #import <Foundation/Foundation.h>
 #import <CoreLocation/CoreLocation.h>
 
+#import "BZAppData.h"
+
 @protocol ControllerNotify
 -(void) setStatus:(NSString*) status;
--(void) setIDStatus:(NSString*)identifier withRegion:(CLBeaconRegion*)region withStatus:(NSString*)status;
+-(void) reloadScanStatus;
 @end
 
 @interface BZController : UIViewController <CLLocationManagerDelegate>
@@ -19,7 +21,7 @@
 @property (readonly) BOOL canScan;
 @property (readonly) BOOL isScanning;
 
-- (BZController*) init;
+- (BZController*) initWithSharedAppData:(BZAppData*)data;
 - (void) didLoad;
 - (void) registerController:(NSObject <ControllerNotify> *) object;
 - (void) startScanning;

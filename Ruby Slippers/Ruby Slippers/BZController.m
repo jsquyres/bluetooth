@@ -7,19 +7,21 @@
 //
 
 #import "BZController.h"
+#import "BZScanStatus.h"
 
 @interface BZController ()
 
-@property (strong, atomic) NSMutableDictionary *regionsByID;
-@property (strong, atomic) NSMutableDictionary *IDsByRegion;
-@property (strong, atomic) CLLocationManager *locationManager;
-@property (strong, atomic) NSMutableArray *viewControllers;
+@property (atomic, weak) BZAppData *appData;
+
 @property (atomic) BOOL hardwareCanScan;
 @property (atomic) BOOL haveAuthToScan;
+@property (strong, atomic) CLLocationManager *locationManager;
+@property (strong, atomic) NSMutableArray *viewControllers;
 
--(void) createRegion:(NSString*)uuid withIdentifier:(NSString*)identifier;
+-(void) createRegion:(NSString*)name
+        withUUID:(NSString*)uuidString;
 -(void) setStatus:(NSString*) status;
--(void) setIDStatus:(NSString*)identifier withRegion:(CLRegion*)region withStatus:(NSString*)status;
+-(void) reloadScanStatus;
 
 @end
 
@@ -27,11 +29,12 @@
 
 /////////////////////////////////////////////////////////////////////////////////////
 
-- (BZController*) init
+- (BZController*) initWithSharedAppData:(BZAppData *)data
 {
     NSLog(@"Initializing the BZController");
 
-    self.viewControllers = [[NSMutableArray alloc] init];
+    _appData = data;
+    _viewControllers = [[NSMutableArray alloc] init];
     _hardwareCanScan = false;
 
     // Is this device capable of scanning?
@@ -44,36 +47,40 @@
         [self setStatus:@"Hardware supports scanning -- w00t"];
 
         // If the hardware supports it, create a location manager (even if we determine we don't have permission to do it, below, we might get permission in the future, so make the relevant objects now)
-        self.locationManager = [[CLLocationManager alloc] init];
-        self.locationManager.delegate = self;
-        self.regionsByID = [[NSMutableDictionary alloc] init];
-        self.IDsByRegion = [[NSMutableDictionary alloc] init];
+        _locationManager = [[CLLocationManager alloc] init];
+        _locationManager.delegate = self;
 
         // Generated UUID from OS X "uuidgen" command
-        [self createRegion:@"FADEBAAB-4D48-4868-B2C3-D98938F9DD74" withIdentifier:@"uuidgen-new"];
+        [self createRegion:@"uuidgen-new"
+                  withUUID:@"FADEBAAB-4D48-4868-B2C3-D98938F9DD74"];
         // From LightBlue, originally
-        [self createRegion:@"00B9AA32-3606-C646-4D69-1F579B17AC50" withIdentifier:@"lightblue-1"];
+        [self createRegion:@"lightBlue-1"
+                  withUUID:@"00B9AA32-3606-C646-4D69-1F579B17AC50"];
         // From LightBlue, Jan 18 2014
-        [self createRegion:@"7d83899c-e72b-e451-95a9-0ad04c9e624f" withIdentifier:@"lightblue-2"];
+        [self createRegion:@"lightblue-2"
+                  withUUID:@"7d83899c-e72b-e451-95a9-0ad04c9e624f"];
         // RadiusNetworks / Apple's iBeacon uuid
-        [self createRegion:@"e2c56db5-dffb-48d2-b060-d0f5a71096e0" withIdentifier:@"apple-ibeacon"];
+        [self createRegion:@"apple-ibeacon"
+                  withUUID:@"e2c56db5-dffb-48d2-b060-d0f5a71096e0"];
+
+        [self setStatus:@"Created all identifiers"];
     }
 
     return self;
 }
 
-- (void) createRegion:(NSString*)uuid withIdentifier:(NSString*) identifier
+- (void) createRegion:(NSString*)name
+         withUUID:(NSString*)uuidString
 {
     // Create a region that we're looking for
-    NSUUID *newUuid = [[NSUUID alloc] initWithUUIDString:uuid];
-    CLBeaconRegion *region = [[CLBeaconRegion alloc] initWithProximityUUID:newUuid identifier:identifier];
+    NSUUID *uuid = [[NSUUID alloc] initWithUUIDString:uuidString];
+    CLBeaconRegion *region = [[CLBeaconRegion alloc] initWithProximityUUID:uuid identifier:name];
 
-    // Save in the dictionary
-    [self.regionsByID setObject:region forKey:identifier];
-    [self.IDsByRegion setObject:identifier forKey:region];
+    // Save a new BZScanStatus
+    [_appData addScanStatus:name withRegion:region];
 
     // List it in the table view
-    [self setIDStatus:identifier withRegion:region withStatus:@"Not scanning"];
+    [self reloadScanStatus];
 }
 
 // Register a view controller to be notified when there's something to display
@@ -123,19 +130,17 @@
     }
 
     NSLog(@"I'm starting to scan...");
-    for (id identifier in self.regionsByID) {
-        CLBeaconRegion *region = [self.regionsByID objectForKey:identifier];
-        [self setStatus:[NSString stringWithFormat:@"Scanning for %@ region...", identifier]];
-        [self setIDStatus:identifier withRegion:region withStatus:@"Scanning..."];
+    for (BZScanStatus *status in _appData.scanStatus) {
+        [self setStatus:[NSString stringWithFormat:@"Scanning for region named %@...", status.name]];
+        status.scanning = @"starting to scan";
 
-        // Start monitoring the region
-        [self.locationManager startMonitoringForRegion:region];
-
-        // For kicks, start determining the state of this region
-        [self.locationManager requestStateForRegion:region];
+        // Start monitoring for the region, and start determining the state of us with respect to that region
+        [_locationManager startMonitoringForRegion:status.region];
+        [_locationManager requestStateForRegion:status.region];
     }
 
     _isScanning = TRUE;
+    [self reloadScanStatus];
 }
 
 - (void) stopScanning
@@ -146,22 +151,24 @@
     }
 
     NSLog(@"I'm stopping scanning...");
-    for (id identifier in self.regionsByID) {
-        CLBeaconRegion *region = [self.regionsByID objectForKey:identifier];
+    for (BZScanStatus *status in _appData.scanStatus) {
+        [self.locationManager stopMonitoringForRegion:status.region];
+        [self.locationManager stopRangingBeaconsInRegion:status.region];
 
-        [self.locationManager stopMonitoringForRegion:region];
-        [self.locationManager stopRangingBeaconsInRegion:region];
-
-        [self setStatus:[NSString stringWithFormat:@"Stopped scanning for %@ region", identifier]];
-        [self setIDStatus:identifier withRegion:region withStatus:@"Not scanning"];
+        [self setStatus:[NSString stringWithFormat:@"Stopped scanning for region name %@", status.name]];
+        status.scanning = @"not scanning";
+        status.status = @"Unknown";
     }
 
     _isScanning = FALSE;
+    [self reloadScanStatus];
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
 
-- (void)locationManager:(CLLocationManager *)manager didDetermineState:(CLRegionState)state forRegion:(CLRegion *)region
+- (void)locationManager:(CLLocationManager *)manager
+         didDetermineState:(CLRegionState)state
+         forRegion:(CLRegion *)region
 {
     NSString *str;
     switch (state) {
@@ -169,33 +176,60 @@
         case CLRegionStateOutside: str = @"Outside"; break;
         default: str = @"Unknown"; break;
     }
-    [self setStatus: [NSString stringWithFormat:@"Determined state for region %@: %@",
-                      region.identifier, str]];
-    [self setIDStatus:self.IDsByRegion[region] withRegion:region withStatus:str];
+
+    // Lookup the BZScanStatus entry for this region
+    BZScanStatus *status = [_appData getStatusByName:region.identifier];
+
+    [self setStatus: [NSString stringWithFormat:@"Determined state for region name %@: %@",
+                      status.name, str]];
+    status.status = str;
+
+    [self reloadScanStatus];
 }
 
-- (void)locationManager:(CLLocationManager *)manager didStartMonitoringForRegion:(CLRegion *)region
+- (void)locationManager:(CLLocationManager *)manager
+         didStartMonitoringForRegion:(CLRegion *)region
 {
+    // Lookup the BZScanStatus entry for this region
+    BZScanStatus *status = [_appData getStatusByName:region.identifier];
+
+    status.scanning = @"scanning";
+
     NSLog(@"Region monitoring started for %@", region.identifier);
-    //[self.locationManager startRangingBeaconsInRegion:region];
+    [self reloadScanStatus];
 }
 
-- (void)locationManager:(CLLocationManager *)manager didEnterRegion:(CLRegion *)region
+- (void)locationManager:(CLLocationManager *)manager
+         didEnterRegion:(CLRegion *)region
 {
-    [self setStatus: [NSString stringWithFormat:@"Entered region %@! Starting ranging...",
-                      region.identifier]];
-    [self setIDStatus:self.IDsByRegion[region] withRegion:region withStatus:@"Entered!"];
+    // Lookup the BZScanStatus entry for this region
+    BZScanStatus *status = [_appData getStatusByName:region.identifier];
+
+    [self setStatus: [NSString stringWithFormat:@"Entered region %@!", status.name]];
+    status.status = @"Inside";
+
+    [self reloadScanStatus];
 }
 
--(void)locationManager:(CLLocationManager *)manager didExitRegion:(CLRegion *)region
+-(void)locationManager:(CLLocationManager *)manager
+         didExitRegion:(CLRegion *)region
 {
-    [self setStatus: [NSString stringWithFormat:@"Left region %@ (stopped ranging)",
-                      region.identifier]];
-    [self setIDStatus:self.IDsByRegion[region] withRegion:region withStatus:@"Exited!"];
+    // Lookup the BZScanStatus entry for this region
+    BZScanStatus *status = [_appData getStatusByName:region.identifier];
+
+    [self setStatus: [NSString stringWithFormat:@"Left region %@", status.name]];
+    status.status = @"Outside";
+
+    [self reloadScanStatus];
 }
 
--(void)locationManager:(CLLocationManager *)manager didRangeBeacons:(NSArray *)beacons inRegion:(CLBeaconRegion *)region
+-(void)locationManager:(CLLocationManager *)manager
+         didRangeBeacons:(NSArray *)beacons
+         inRegion:(CLBeaconRegion *)region
 {
+    // Lookup the BZScanStatus entry for this region
+    BZScanStatus *status = [_appData getStatusByName:region.identifier];
+
     CLBeacon *beacon = [[CLBeacon alloc] init];
 
     NSLog(@"Printing all the beacons in %@: %lu", region.identifier,
@@ -214,8 +248,10 @@
                           beacon.proximityUUID.UUIDString,
                           beacon.major, beacon.minor, beacon.accuracy,
                           distance, (long)beacon.rssi]];
-        [self setIDStatus:self.IDsByRegion[region] withRegion:region withStatus:distance];
+        status.distance = distance;
     }
+
+    [self reloadScanStatus];
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -228,11 +264,10 @@
     }
 }
 
--(void) setIDStatus:(NSString*)identifier withRegion:(CLBeaconRegion*)region withStatus:(NSString*)status
+-(void) reloadScanStatus
 {
-    NSLog(@"%@ (UUID:%@,major:%@,minor:%@): %@", identifier, [region.proximityUUID UUIDString], region.major, region.minor, status);
     for (NSObject <ControllerNotify> *item in _viewControllers) {
-        [item setIDStatus:identifier withRegion:region withStatus:status];
+        [item reloadScanStatus];
     }
 }
 

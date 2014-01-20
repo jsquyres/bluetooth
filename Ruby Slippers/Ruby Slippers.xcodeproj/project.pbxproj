@@ -27,7 +27,7 @@
 		33D2005A188C98350043F68E /* BZTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 33D20059188C98350043F68E /* BZTableViewController.m */; };
 		33D2005D188C9C2D0043F68E /* BZAppData.m in Sources */ = {isa = PBXBuildFile; fileRef = 33D2005C188C9C2D0043F68E /* BZAppData.m */; };
 		33D20060188CA1F00043F68E /* BZController.m in Sources */ = {isa = PBXBuildFile; fileRef = 33D2005F188CA1F00043F68E /* BZController.m */; };
-		33D20063188CD2790043F68E /* BZTableRow.m in Sources */ = {isa = PBXBuildFile; fileRef = 33D20062188CD2790043F68E /* BZTableRow.m */; };
+		33D20069188D4DFD0043F68E /* BZScanStatus.m in Sources */ = {isa = PBXBuildFile; fileRef = 33D20068188D4DFD0043F68E /* BZScanStatus.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -70,8 +70,8 @@
 		33D2005C188C9C2D0043F68E /* BZAppData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BZAppData.m; sourceTree = "<group>"; };
 		33D2005E188CA1F00043F68E /* BZController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BZController.h; sourceTree = "<group>"; };
 		33D2005F188CA1F00043F68E /* BZController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BZController.m; sourceTree = "<group>"; };
-		33D20061188CD2790043F68E /* BZTableRow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BZTableRow.h; sourceTree = "<group>"; };
-		33D20062188CD2790043F68E /* BZTableRow.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BZTableRow.m; sourceTree = "<group>"; };
+		33D20067188D4DFD0043F68E /* BZScanStatus.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BZScanStatus.h; sourceTree = "<group>"; };
+		33D20068188D4DFD0043F68E /* BZScanStatus.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BZScanStatus.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -142,14 +142,14 @@
 				335C9B261882C87700EE8309 /* Main_iPad.storyboard */,
 				33D2005B188C9C2D0043F68E /* BZAppData.h */,
 				33D2005C188C9C2D0043F68E /* BZAppData.m */,
+				33D20067188D4DFD0043F68E /* BZScanStatus.h */,
+				33D20068188D4DFD0043F68E /* BZScanStatus.m */,
 				33D2005E188CA1F00043F68E /* BZController.h */,
 				33D2005F188CA1F00043F68E /* BZController.m */,
 				335C9B291882C87700EE8309 /* BZFirstViewController.h */,
 				335C9B2A1882C87700EE8309 /* BZFirstViewController.m */,
 				33D20058188C98350043F68E /* BZTableViewController.h */,
 				33D20059188C98350043F68E /* BZTableViewController.m */,
-				33D20061188CD2790043F68E /* BZTableRow.h */,
-				33D20062188CD2790043F68E /* BZTableRow.m */,
 				335C9B2F1882C87700EE8309 /* Images.xcassets */,
 				335C9B181882C87700EE8309 /* Supporting Files */,
 			);
@@ -299,8 +299,8 @@
 				33D2005D188C9C2D0043F68E /* BZAppData.m in Sources */,
 				335C9B221882C87700EE8309 /* BZAppDelegate.m in Sources */,
 				335C9B2B1882C87700EE8309 /* BZFirstViewController.m in Sources */,
-				33D20063188CD2790043F68E /* BZTableRow.m in Sources */,
 				33D20060188CA1F00043F68E /* BZController.m in Sources */,
+				33D20069188D4DFD0043F68E /* BZScanStatus.m in Sources */,
 				335C9B1E1882C87700EE8309 /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

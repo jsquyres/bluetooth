@@ -17,10 +17,11 @@
 
 @interface BZFirstViewController ()
 
-@property (weak, nonatomic) IBOutlet UISwitch *EnableBLEScanningSwitch;
-@property (weak, nonatomic) IBOutlet UILabel *EnableBLEScanningLabel;
-@property (weak, nonatomic) IBOutlet UITextView *ResultsLabel;
-@property (weak, nonatomic) BZAppData *appData;
+@property (atomic, weak) BZAppData *appData;
+
+@property (nonatomic, weak) IBOutlet UISwitch *EnableBLEScanningSwitch;
+@property (nonatomic, weak) IBOutlet UILabel *EnableBLEScanningLabel;
+@property (nonatomic, weak) IBOutlet UITextView *ResultsLabel;
 
 - (void) enableUI:(BOOL) enable;
 
@@ -74,8 +75,8 @@
     }
 }
 
-// Set the status message for a specific beacon
--(void) setIDStatus:(NSString*)identifier withRegion:(CLBeaconRegion*)region withStatus:(NSString*)status;
+// Set the status message for all named regions
+-(void) reloadScanStatus
 {
     // Do nothing
 }
