@@ -11,7 +11,7 @@
 
 @interface BZFirstViewController : UIViewController <ControllerNotify>
 
--(void) setStatus:(NSString*) status;
--(void) reloadScanStatus;
+- (void) setStatusMessage:(NSString*)statusMessage;
+- (void) reRenderScanStatus;
 
 @end

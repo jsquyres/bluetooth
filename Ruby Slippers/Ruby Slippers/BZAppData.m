@@ -54,23 +54,24 @@
 
 //////////////////////////////////////////////////////////////////////
 
-- (void) addScanStatus:(NSString*)name withRegion:(CLBeaconRegion*)region
+- (void) addScanStatus:(NSString*)name withBeaconRegion:(CLBeaconRegion*)beaconRegion
 {
     // Make a BZScanStatus and save it in the ordered array
     BZScanStatus *status = [[BZScanStatus alloc] init];
     status.name = name;
-    status.region = region;
+    status.beaconRegion = beaconRegion;
     status.scanning = @"not scanning";
     status.status = @"Unknown";
+    status.statusTimestamp = [NSDate date];
     status.distance = @"Unknown";
     [_scanStatus addObject:status];
 
     // Now save lookup entries so that we can lookup BZScanStatus array indexes by region name and region UUID
     NSNumber *index = [NSNumber numberWithInteger:[_scanStatus count] - 1];
     _indexByName[name] = index;
-    _indexByUUID[region.proximityUUID.UUIDString] = index;
+    _indexByUUID[beaconRegion.proximityUUID.UUIDString] = index;
 
-    NSLog(@"We just saved scan status %@,%@ at index %lu", name, region.proximityUUID.UUIDString, (unsigned long) [_scanStatus count]);
+    NSLog(@"We just saved scan status %@,%@ at index %lu", name, beaconRegion.proximityUUID.UUIDString, (unsigned long) [_scanStatus count]);
 }
 
 - (BZScanStatus*)getStatusByName:(NSString*)name

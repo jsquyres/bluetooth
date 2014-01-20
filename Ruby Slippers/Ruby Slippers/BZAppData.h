@@ -19,7 +19,8 @@
 
 + (id)sharedAppData;
 
-- (void) addScanStatus:(NSString*)name withRegion:(CLBeaconRegion*)region;
+- (void) addScanStatus:(NSString*)name
+      withBeaconRegion:(CLBeaconRegion*)beaconRegion;
 - (BZScanStatus*)getStatusByName:(NSString*)name;
 - (BZScanStatus*)getStatusByUUID:(NSString*)name;
 

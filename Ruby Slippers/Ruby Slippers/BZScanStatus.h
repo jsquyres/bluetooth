@@ -12,9 +12,11 @@
 @interface BZScanStatus : NSObject
 
 @property (strong, atomic) NSString *name;
-@property (strong, atomic) CLBeaconRegion *region;
+@property (strong, atomic) CLBeaconRegion *beaconRegion;
 @property (strong, atomic) NSString *scanning;
 @property (strong, atomic) NSString *status;
+@property (strong, atomic) NSDate *statusTimestamp;
+@property (strong, atomic) NSArray *foundBeacons;
 @property (strong, atomic) NSString *distance;
 
 @end

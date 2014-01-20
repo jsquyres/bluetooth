@@ -12,8 +12,8 @@
 #import "BZAppData.h"
 
 @protocol ControllerNotify
--(void) setStatus:(NSString*) status;
--(void) reloadScanStatus;
+- (void) setStatusMessage:(NSString*)statusMessage;
+- (void) reRenderScanStatus;
 @end
 
 @interface BZController : UIViewController <CLLocationManagerDelegate>
@@ -24,6 +24,7 @@
 - (BZController*) initWithSharedAppData:(BZAppData*)data;
 - (void) didLoad;
 - (void) registerController:(NSObject <ControllerNotify> *) object;
+- (void) deregisterController:(NSObject <ControllerNotify> *) object;
 - (void) startScanning;
 - (void) stopScanning;
 

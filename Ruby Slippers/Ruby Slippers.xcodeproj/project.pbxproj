@@ -24,10 +24,11 @@
 		335C9B391882C87700EE8309 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 335C9B151882C87700EE8309 /* UIKit.framework */; };
 		335C9B411882C87700EE8309 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 335C9B3F1882C87700EE8309 /* InfoPlist.strings */; };
 		335C9B431882C87700EE8309 /* Ruby_SlippersTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 335C9B421882C87700EE8309 /* Ruby_SlippersTests.m */; };
-		33D2005A188C98350043F68E /* BZTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 33D20059188C98350043F68E /* BZTableViewController.m */; };
 		33D2005D188C9C2D0043F68E /* BZAppData.m in Sources */ = {isa = PBXBuildFile; fileRef = 33D2005C188C9C2D0043F68E /* BZAppData.m */; };
 		33D20060188CA1F00043F68E /* BZController.m in Sources */ = {isa = PBXBuildFile; fileRef = 33D2005F188CA1F00043F68E /* BZController.m */; };
 		33D20069188D4DFD0043F68E /* BZScanStatus.m in Sources */ = {isa = PBXBuildFile; fileRef = 33D20068188D4DFD0043F68E /* BZScanStatus.m */; };
+		33D20072188D8BF70043F68E /* BZAllRegionsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 33D20071188D8BF70043F68E /* BZAllRegionsViewController.m */; };
+		33D20075188D917B0043F68E /* BZRegionViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 33D20074188D917B0043F68E /* BZRegionViewController.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -64,14 +65,16 @@
 		335C9B401882C87700EE8309 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		335C9B421882C87700EE8309 /* Ruby_SlippersTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Ruby_SlippersTests.m; sourceTree = "<group>"; };
 		335C9B4C1882C8D500EE8309 /* Ruby Slippers.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = "Ruby Slippers.entitlements"; sourceTree = "<group>"; };
-		33D20058188C98350043F68E /* BZTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BZTableViewController.h; sourceTree = "<group>"; };
-		33D20059188C98350043F68E /* BZTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BZTableViewController.m; sourceTree = "<group>"; };
 		33D2005B188C9C2D0043F68E /* BZAppData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BZAppData.h; sourceTree = "<group>"; };
 		33D2005C188C9C2D0043F68E /* BZAppData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BZAppData.m; sourceTree = "<group>"; };
 		33D2005E188CA1F00043F68E /* BZController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BZController.h; sourceTree = "<group>"; };
 		33D2005F188CA1F00043F68E /* BZController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BZController.m; sourceTree = "<group>"; };
 		33D20067188D4DFD0043F68E /* BZScanStatus.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BZScanStatus.h; sourceTree = "<group>"; };
 		33D20068188D4DFD0043F68E /* BZScanStatus.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BZScanStatus.m; sourceTree = "<group>"; };
+		33D20070188D8BF70043F68E /* BZAllRegionsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = BZAllRegionsViewController.h; path = ../BZAllRegionsViewController.h; sourceTree = "<group>"; };
+		33D20071188D8BF70043F68E /* BZAllRegionsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = BZAllRegionsViewController.m; path = ../BZAllRegionsViewController.m; sourceTree = "<group>"; };
+		33D20073188D917B0043F68E /* BZRegionViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BZRegionViewController.h; sourceTree = "<group>"; };
+		33D20074188D917B0043F68E /* BZRegionViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BZRegionViewController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -148,8 +151,10 @@
 				33D2005F188CA1F00043F68E /* BZController.m */,
 				335C9B291882C87700EE8309 /* BZFirstViewController.h */,
 				335C9B2A1882C87700EE8309 /* BZFirstViewController.m */,
-				33D20058188C98350043F68E /* BZTableViewController.h */,
-				33D20059188C98350043F68E /* BZTableViewController.m */,
+				33D20070188D8BF70043F68E /* BZAllRegionsViewController.h */,
+				33D20071188D8BF70043F68E /* BZAllRegionsViewController.m */,
+				33D20073188D917B0043F68E /* BZRegionViewController.h */,
+				33D20074188D917B0043F68E /* BZRegionViewController.m */,
 				335C9B2F1882C87700EE8309 /* Images.xcassets */,
 				335C9B181882C87700EE8309 /* Supporting Files */,
 			);
@@ -295,8 +300,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				33D2005A188C98350043F68E /* BZTableViewController.m in Sources */,
 				33D2005D188C9C2D0043F68E /* BZAppData.m in Sources */,
+				33D20072188D8BF70043F68E /* BZAllRegionsViewController.m in Sources */,
+				33D20075188D917B0043F68E /* BZRegionViewController.m in Sources */,
 				335C9B221882C87700EE8309 /* BZAppDelegate.m in Sources */,
 				335C9B2B1882C87700EE8309 /* BZFirstViewController.m in Sources */,
 				33D20060188CA1F00043F68E /* BZController.m in Sources */,

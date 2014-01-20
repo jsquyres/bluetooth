@@ -60,6 +60,12 @@
     // Dispose of any resources that can be recreated.
 }
 
+// When this object goes away, deregister it from the controller
+- (void) dealloc
+{
+    [_appData.controller deregisterController:self];
+}
+
 // Enable the label and "Enable scanning" switch
 - (void)enableUI:(BOOL) enable
 {
@@ -68,15 +74,15 @@
 }
 
 // Set the status message
-- (void) setStatus:(NSString *) status
+- (void) setStatusMessage:(NSString *)statusMessage
 {
     if ([self.appData.controller isScanning]) {
-        _ResultsLabel.text =status;
+        _ResultsLabel.text = statusMessage;
     }
 }
 
 // Set the status message for all named regions
--(void) reloadScanStatus
+-(void) reRenderScanStatus
 {
     // Do nothing
 }
@@ -88,11 +94,11 @@
 - (IBAction)enableBLEScanning:(UISwitch *)sender {
     if ([sender isOn]) {
         NSLog(@"They switched it on!  Party time!");
-        [self setStatus:@"Scanning..."];
+        [self setStatusMessage:@"Scanning..."];
         [_appData.controller startScanning];
     } else {
         NSLog(@"They switched it off.  Sadness.");
-        [self setStatus:@"< Not scanning >"];
+        [self setStatusMessage:@"< Not scanning >"];
         [_appData.controller stopScanning];
     }
 }

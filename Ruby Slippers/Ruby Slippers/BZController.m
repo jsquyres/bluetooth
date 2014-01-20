@@ -18,10 +18,10 @@
 @property (strong, atomic) CLLocationManager *locationManager;
 @property (strong, atomic) NSMutableArray *viewControllers;
 
--(void) createRegion:(NSString*)name
-        withUUID:(NSString*)uuidString;
--(void) setStatus:(NSString*) status;
--(void) reloadScanStatus;
+- (void) createRegion:(NSString*)name
+             withUUID:(NSString*)uuidString;
+- (void) setStatusMessage:(NSString*)statusMessage;
+- (void) reRenderScanStatus;
 
 @end
 
@@ -39,12 +39,12 @@
 
     // Is this device capable of scanning?
     if (! [CLLocationManager isMonitoringAvailableForClass:[CLBeaconRegion class]]) {
-        [self setStatus:@"Scanning is not possible on this hardware"];
+        [self setStatusMessage:@"Scanning is not possible on this hardware"];
         _hardwareCanScan = FALSE;
         _canScan = FALSE;
     } else {
         _hardwareCanScan = TRUE;
-        [self setStatus:@"Hardware supports scanning -- w00t"];
+        [self setStatusMessage:@"Hardware supports scanning -- w00t"];
 
         // If the hardware supports it, create a location manager (even if we determine we don't have permission to do it, below, we might get permission in the future, so make the relevant objects now)
         _locationManager = [[CLLocationManager alloc] init];
@@ -63,7 +63,7 @@
         [self createRegion:@"apple-ibeacon"
                   withUUID:@"e2c56db5-dffb-48d2-b060-d0f5a71096e0"];
 
-        [self setStatus:@"Created all identifiers"];
+        [self setStatusMessage:@"Created all identifiers"];
     }
 
     return self;
@@ -74,20 +74,13 @@
 {
     // Create a region that we're looking for
     NSUUID *uuid = [[NSUUID alloc] initWithUUIDString:uuidString];
-    CLBeaconRegion *region = [[CLBeaconRegion alloc] initWithProximityUUID:uuid identifier:name];
+    CLBeaconRegion *beaconRegion = [[CLBeaconRegion alloc] initWithProximityUUID:uuid identifier:name];
 
     // Save a new BZScanStatus
-    [_appData addScanStatus:name withRegion:region];
+    [_appData addScanStatus:name withBeaconRegion:beaconRegion];
 
     // List it in the table view
-    [self reloadScanStatus];
-}
-
-// Register a view controller to be notified when there's something to display
-- (void) registerController:(NSObject <ControllerNotify> *) object
-{
-    [_viewControllers addObject:object];
-    NSLog(@"BZController registered a ControllerNotify object (now have %lu)", (unsigned long)[_viewControllers count]);
+    [self reRenderScanStatus];
 }
 
 // We were just loaded.
@@ -104,21 +97,48 @@
     // JMS Somehow have to respond to "now you [do|do not] have location services authorization" events
 
     if ([CLLocationManager authorizationStatus] != kCLAuthorizationStatusAuthorized) {
-        [self setStatus:@"Location services are not enabled for this app"];
+        [self setStatusMessage:@"Location services are not enabled for this app"];
         _canScan = FALSE;
+
+        // JMS Need to zero out the BZScanStatus array (e.g., if we had auth, filled in the array, and then came back without auth)
         return;
     }
 
-    [self setStatus:@"App is authorized to use location data -- w00t"];
     _canScan = TRUE;
 
+#if 0
     // Do we have beacon ranging?
     if ([CLLocationManager isRangingAvailable]) {
-        [self setStatus:@"Ranging is available -- w00t"];
+        [self setStatusMessage:@"Ranging is available -- w00t"];
     } else {
-        [self setStatus:@"Ranging is not available"];
+        [self setStatusMessage:@"Ranging is not available"];
     }
+#endif
 }
+
+/////////////////////////////////////////////////////////////////////////////////////
+
+// Register a view controller to be notified when there's something to display
+- (void) registerController:(NSObject <ControllerNotify> *) object
+{
+    [_viewControllers addObject:object];
+    NSLog(@"BZController registered a ControllerNotify object (now have %lu)", (unsigned long)[_viewControllers count]);
+}
+
+// Deregister a view controller to be notified when there's something to display
+- (void) deregisterController:(NSObject <ControllerNotify> *) object
+{
+    for (NSObject <ControllerNotify> *item in _viewControllers) {
+        if (item == object) {
+            [_viewControllers removeObject:item];
+            break;
+        }
+    }
+
+    [_viewControllers addObject:object];
+    NSLog(@"BZController deregistered a ControllerNotify object (now have %lu)", (unsigned long)[_viewControllers count]);
+}
+
 
 /////////////////////////////////////////////////////////////////////////////////////
 
@@ -131,16 +151,18 @@
 
     NSLog(@"I'm starting to scan...");
     for (BZScanStatus *status in _appData.scanStatus) {
-        [self setStatus:[NSString stringWithFormat:@"Scanning for region named %@...", status.name]];
+        [self setStatusMessage:[NSString stringWithFormat:@"Scanning for region named %@...", status.name]];
         status.scanning = @"starting to scan";
+        status.foundBeacons = nil;
+        status.statusTimestamp = [NSDate date];
 
         // Start monitoring for the region, and start determining the state of us with respect to that region
-        [_locationManager startMonitoringForRegion:status.region];
-        [_locationManager requestStateForRegion:status.region];
+        [_locationManager startMonitoringForRegion:status.beaconRegion];
+        [_locationManager requestStateForRegion:status.beaconRegion];
     }
 
     _isScanning = TRUE;
-    [self reloadScanStatus];
+    [self reRenderScanStatus];
 }
 
 - (void) stopScanning
@@ -152,20 +174,23 @@
 
     NSLog(@"I'm stopping scanning...");
     for (BZScanStatus *status in _appData.scanStatus) {
-        [self.locationManager stopMonitoringForRegion:status.region];
-        [self.locationManager stopRangingBeaconsInRegion:status.region];
+        [self.locationManager stopMonitoringForRegion:status.beaconRegion];
+        [self.locationManager stopRangingBeaconsInRegion:status.beaconRegion];
 
-        [self setStatus:[NSString stringWithFormat:@"Stopped scanning for region name %@", status.name]];
+        [self setStatusMessage:[NSString stringWithFormat:@"Stopped scanning for region name %@", status.name]];
         status.scanning = @"not scanning";
         status.status = @"Unknown";
+        status.foundBeacons = nil;
+        status.statusTimestamp = [NSDate date];
     }
 
     _isScanning = FALSE;
-    [self reloadScanStatus];
+    [self reRenderScanStatus];
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
 
+// We determined our state relative to a region
 - (void)locationManager:(CLLocationManager *)manager
          didDetermineState:(CLRegionState)state
          forRegion:(CLRegion *)region
@@ -180,13 +205,21 @@
     // Lookup the BZScanStatus entry for this region
     BZScanStatus *status = [_appData getStatusByName:region.identifier];
 
-    [self setStatus: [NSString stringWithFormat:@"Determined state for region name %@: %@",
+    [self setStatusMessage:[NSString stringWithFormat:@"Determined state for region name %@: %@",
                       status.name, str]];
     status.status = str;
+    status.statusTimestamp = [NSDate date];
 
-    [self reloadScanStatus];
+    // If we're inside, start ranging
+    if (CLRegionStateInside == state) {
+        NSLog(@"===== start ranging 1");
+        [_locationManager startRangingBeaconsInRegion:status.beaconRegion];
+    }
+
+    [self reRenderScanStatus];
 }
 
+// We started scanning for the region
 - (void)locationManager:(CLLocationManager *)manager
          didStartMonitoringForRegion:(CLRegion *)region
 {
@@ -194,35 +227,48 @@
     BZScanStatus *status = [_appData getStatusByName:region.identifier];
 
     status.scanning = @"scanning";
+    status.statusTimestamp = [NSDate date];
 
     NSLog(@"Region monitoring started for %@", region.identifier);
-    [self reloadScanStatus];
+    [self reRenderScanStatus];
 }
 
+// We entered the region
 - (void)locationManager:(CLLocationManager *)manager
          didEnterRegion:(CLRegion *)region
 {
     // Lookup the BZScanStatus entry for this region
     BZScanStatus *status = [_appData getStatusByName:region.identifier];
 
-    [self setStatus: [NSString stringWithFormat:@"Entered region %@!", status.name]];
+    [self setStatusMessage:[NSString stringWithFormat:@"Entered region %@!", status.name]];
     status.status = @"Inside";
+    status.statusTimestamp = [NSDate date];
 
-    [self reloadScanStatus];
+    NSLog(@"===== start ranging 2");
+    [_locationManager startRangingBeaconsInRegion:status.beaconRegion];
+
+    [self reRenderScanStatus];
 }
 
+// We exited the region
 -(void)locationManager:(CLLocationManager *)manager
          didExitRegion:(CLRegion *)region
 {
     // Lookup the BZScanStatus entry for this region
     BZScanStatus *status = [_appData getStatusByName:region.identifier];
 
-    [self setStatus: [NSString stringWithFormat:@"Left region %@", status.name]];
+    [self setStatusMessage:[NSString stringWithFormat:@"Left region %@", status.name]];
     status.status = @"Outside";
+    status.statusTimestamp = [NSDate date];
+    status.foundBeacons = nil;
 
-    [self reloadScanStatus];
+    NSLog(@"===== stop ranging");
+    [_locationManager stopRangingBeaconsInRegion:status.beaconRegion];
+
+    [self reRenderScanStatus];
 }
 
+// We found some beacons!
 -(void)locationManager:(CLLocationManager *)manager
          didRangeBeacons:(NSArray *)beacons
          inRegion:(CLBeaconRegion *)region
@@ -230,46 +276,26 @@
     // Lookup the BZScanStatus entry for this region
     BZScanStatus *status = [_appData getStatusByName:region.identifier];
 
-    CLBeacon *beacon = [[CLBeacon alloc] init];
-
-    NSLog(@"Printing all the beacons in %@: %lu", region.identifier,
-          (unsigned long)[beacons count]);
-    for (beacon in beacons) {
-        NSString *distance;
-        switch (beacon.proximity) {
-            case CLProximityImmediate: distance = @"Immediate"; break;
-            case CLProximityNear: distance = @"Near"; break;
-            case CLProximityFar: distance = @"Far"; break;
-            default: distance = @"Unknown distance"; break;
-        }
-
-        [self setStatus: [NSString stringWithFormat:@"Found range in %@: UUID:%@, Major/Minor:%@/%@, Accuracy:%f, Distance:%@, RSSI:%ld",
-                          region.identifier,
-                          beacon.proximityUUID.UUIDString,
-                          beacon.major, beacon.minor, beacon.accuracy,
-                          distance, (long)beacon.rssi]];
-        status.distance = distance;
-    }
-
-    [self reloadScanStatus];
+    status.statusTimestamp = [NSDate date];
+    status.foundBeacons = beacons;
+    [self reRenderScanStatus];
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
 
--(void) setStatus:(NSString*) status
+-(void) setStatusMessage:(NSString*)statusMessage
 {
-    NSLog(@"%@", status);
+    NSLog(@"%@", statusMessage);
     for (NSObject <ControllerNotify> *item in _viewControllers) {
-        [item setStatus:status];
+        [item setStatusMessage:statusMessage];
     }
 }
 
--(void) reloadScanStatus
+-(void) reRenderScanStatus
 {
     for (NSObject <ControllerNotify> *item in _viewControllers) {
-        [item reloadScanStatus];
+        [item reRenderScanStatus];
     }
 }
-
 
 @end
