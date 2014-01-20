@@ -7,7 +7,8 @@
 //
 
 #import "BZFirstViewController.h"
-#import "BZBeacon.h"
+#import "BZAppData.h"
+#import "BZController.h"
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
@@ -19,10 +20,9 @@
 @property (weak, nonatomic) IBOutlet UISwitch *EnableBLEScanningSwitch;
 @property (weak, nonatomic) IBOutlet UILabel *EnableBLEScanningLabel;
 @property (weak, nonatomic) IBOutlet UITextView *ResultsLabel;
-@property BZBeacon *controller;
+@property (weak, nonatomic) BZAppData *appData;
 
-- (void) enableUI;
-- (void) disableUI;
+- (void) enableUI:(BOOL) enable;
 
 @end
 
@@ -34,41 +34,23 @@
     [super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.
 
-    // Is this device capable of scanning?
-    if (! [CLLocationManager isMonitoringAvailableForClass:[CLBeaconRegion class]]) {
-        [self disableUI];
-        [self printResults:@"Scanning not possible on this hardware, sorry"];
-        NSLog(@"Scanning is not possible on this hardware -- switch is disabled");
-        return;
+    // First time through, get the shared data
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        NSLog(@"FirstController -- first time through, getting shared data");
+        _appData = [BZAppData sharedAppData];
+
+        // Register this view controller with the BZController
+        [_appData.controller registerController:self];
+    });
+
+    [_appData.controller didLoad];
+    if ([_appData.controller canScan]) {
+        [self enableUI:true];
+        [self enableBLEScanning:self.EnableBLEScanningSwitch];
+    } else {
+        [self enableUI:false];
     }
-    NSLog(@"Hardware supports scanning -- w00t");
-
-    // Has this app been given permission to use location data?  This is a little tricky, because the app won't even show up in Settings -> Privacy -> Location Settings until you actually try to *use* Location Services.  So if we don't currently have authorization, make sure we go try to *use* them.
-    // JMS Need to add that logic ^^
-    // JMS Somehow have to respond to "now you [do|do not] have location services authorization" events
-
-    if ([CLLocationManager authorizationStatus] != kCLAuthorizationStatusAuthorized) {
-        [self disableUI];
-        [self printResults:@"You need to enable location services for this app"];
-        NSLog(@"Location services are not enabled for this app -- switch is disabled");
-        return;
-    }
-    NSLog(@"App is authorized to use location data -- w00t");
-
-    // Do we have beacon ranging?
-    if ([CLLocationManager isRangingAvailable]) {
-        NSLog(@"Ranging is available -- w00t");
-    }
-
-    [self enableUI];
-    NSLog(@"All scanning checks passed -- switch is enabled");
-
-    // Allocate and initialize our BLE controller object
-    if (Nil == _controller) {
-        _controller = [[BZBeacon alloc] init:self];
-    }
-
-    [self EnableBLEScanning:self.EnableBLEScanningSwitch];
 }
 
 - (void)didReceiveMemoryWarning
@@ -77,36 +59,40 @@
     // Dispose of any resources that can be recreated.
 }
 
-- (void)enableUI
+// Enable the label and "Enable scanning" switch
+- (void)enableUI:(BOOL) enable
 {
-    _EnableBLEScanningSwitch.enabled = YES;
-    _EnableBLEScanningLabel.enabled = YES;
+    _EnableBLEScanningSwitch.enabled = enable;
+    _EnableBLEScanningLabel.enabled = enable;
 }
 
-- (void)disableUI
+// Set the status message
+- (void) setStatus:(NSString *) status
 {
-    _EnableBLEScanningSwitch.enabled = NO;
-    _EnableBLEScanningLabel.enabled = NO;
+    if ([self.appData.controller isScanning]) {
+        _ResultsLabel.text =status;
+    }
 }
 
-- (void) printResults:(NSString*) label
+// Set the status message for a specific beacon
+-(void) setIDStatus:(NSString*)identifier withRegion:(CLBeaconRegion*)region withStatus:(NSString*)status;
 {
-    _ResultsLabel.text = label;
+    // Do nothing
 }
 
 //
 // Method invoked when the user toggles the "Enable scanning" switch
 // on the view
 //
-- (IBAction)EnableBLEScanning:(UISwitch *)sender {
+- (IBAction)enableBLEScanning:(UISwitch *)sender {
     if ([sender isOn]) {
         NSLog(@"They switched it on!  Party time!");
-        [self printResults:@"Scanning..."];
-        [_controller startScanning];
+        [self setStatus:@"Scanning..."];
+        [_appData.controller startScanning];
     } else {
         NSLog(@"They switched it off.  Sadness.");
-        [self printResults:@"< Not scanning >"];
-        [_controller stopScanning];
+        [self setStatus:@"< Not scanning >"];
+        [_appData.controller stopScanning];
     }
 }
 

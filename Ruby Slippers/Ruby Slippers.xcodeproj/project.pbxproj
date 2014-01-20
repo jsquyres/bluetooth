@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		3335EFD91883526200C84E7D /* BZBeacon.m in Sources */ = {isa = PBXBuildFile; fileRef = 3335EFD81883526200C84E7D /* BZBeacon.m */; };
 		3335EFDB188359F400C84E7D /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3335EFDA188359F400C84E7D /* CoreBluetooth.framework */; };
 		3335EFDD18835F8700C84E7D /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3335EFDC18835F8700C84E7D /* CoreLocation.framework */; };
 		335C9B121882C87700EE8309 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 335C9B111882C87700EE8309 /* Foundation.framework */; };
@@ -19,13 +18,16 @@
 		335C9B251882C87700EE8309 /* Main_iPhone.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 335C9B231882C87700EE8309 /* Main_iPhone.storyboard */; };
 		335C9B281882C87700EE8309 /* Main_iPad.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 335C9B261882C87700EE8309 /* Main_iPad.storyboard */; };
 		335C9B2B1882C87700EE8309 /* BZFirstViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 335C9B2A1882C87700EE8309 /* BZFirstViewController.m */; };
-		335C9B2E1882C87700EE8309 /* BZSecondViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 335C9B2D1882C87700EE8309 /* BZSecondViewController.m */; };
 		335C9B301882C87700EE8309 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 335C9B2F1882C87700EE8309 /* Images.xcassets */; };
 		335C9B371882C87700EE8309 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 335C9B361882C87700EE8309 /* XCTest.framework */; };
 		335C9B381882C87700EE8309 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 335C9B111882C87700EE8309 /* Foundation.framework */; };
 		335C9B391882C87700EE8309 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 335C9B151882C87700EE8309 /* UIKit.framework */; };
 		335C9B411882C87700EE8309 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 335C9B3F1882C87700EE8309 /* InfoPlist.strings */; };
 		335C9B431882C87700EE8309 /* Ruby_SlippersTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 335C9B421882C87700EE8309 /* Ruby_SlippersTests.m */; };
+		33D2005A188C98350043F68E /* BZTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 33D20059188C98350043F68E /* BZTableViewController.m */; };
+		33D2005D188C9C2D0043F68E /* BZAppData.m in Sources */ = {isa = PBXBuildFile; fileRef = 33D2005C188C9C2D0043F68E /* BZAppData.m */; };
+		33D20060188CA1F00043F68E /* BZController.m in Sources */ = {isa = PBXBuildFile; fileRef = 33D2005F188CA1F00043F68E /* BZController.m */; };
+		33D20063188CD2790043F68E /* BZTableRow.m in Sources */ = {isa = PBXBuildFile; fileRef = 33D20062188CD2790043F68E /* BZTableRow.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -39,8 +41,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		3335EFD71883526200C84E7D /* BZBeacon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BZBeacon.h; sourceTree = "<group>"; };
-		3335EFD81883526200C84E7D /* BZBeacon.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BZBeacon.m; sourceTree = "<group>"; };
 		3335EFDA188359F400C84E7D /* CoreBluetooth.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreBluetooth.framework; path = System/Library/Frameworks/CoreBluetooth.framework; sourceTree = SDKROOT; };
 		3335EFDC18835F8700C84E7D /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
 		335C9B0E1882C87700EE8309 /* Ruby Slippers.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Ruby Slippers.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -57,8 +57,6 @@
 		335C9B271882C87700EE8309 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main_iPad.storyboard; sourceTree = "<group>"; };
 		335C9B291882C87700EE8309 /* BZFirstViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BZFirstViewController.h; sourceTree = "<group>"; };
 		335C9B2A1882C87700EE8309 /* BZFirstViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BZFirstViewController.m; sourceTree = "<group>"; };
-		335C9B2C1882C87700EE8309 /* BZSecondViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BZSecondViewController.h; sourceTree = "<group>"; };
-		335C9B2D1882C87700EE8309 /* BZSecondViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BZSecondViewController.m; sourceTree = "<group>"; };
 		335C9B2F1882C87700EE8309 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		335C9B351882C87700EE8309 /* Ruby SlippersTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Ruby SlippersTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		335C9B361882C87700EE8309 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
@@ -66,6 +64,14 @@
 		335C9B401882C87700EE8309 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		335C9B421882C87700EE8309 /* Ruby_SlippersTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Ruby_SlippersTests.m; sourceTree = "<group>"; };
 		335C9B4C1882C8D500EE8309 /* Ruby Slippers.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = "Ruby Slippers.entitlements"; sourceTree = "<group>"; };
+		33D20058188C98350043F68E /* BZTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BZTableViewController.h; sourceTree = "<group>"; };
+		33D20059188C98350043F68E /* BZTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BZTableViewController.m; sourceTree = "<group>"; };
+		33D2005B188C9C2D0043F68E /* BZAppData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BZAppData.h; sourceTree = "<group>"; };
+		33D2005C188C9C2D0043F68E /* BZAppData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BZAppData.m; sourceTree = "<group>"; };
+		33D2005E188CA1F00043F68E /* BZController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BZController.h; sourceTree = "<group>"; };
+		33D2005F188CA1F00043F68E /* BZController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BZController.m; sourceTree = "<group>"; };
+		33D20061188CD2790043F68E /* BZTableRow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BZTableRow.h; sourceTree = "<group>"; };
+		33D20062188CD2790043F68E /* BZTableRow.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BZTableRow.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -132,14 +138,18 @@
 				335C9B4C1882C8D500EE8309 /* Ruby Slippers.entitlements */,
 				335C9B201882C87700EE8309 /* BZAppDelegate.h */,
 				335C9B211882C87700EE8309 /* BZAppDelegate.m */,
-				3335EFD71883526200C84E7D /* BZBeacon.h */,
-				3335EFD81883526200C84E7D /* BZBeacon.m */,
 				335C9B231882C87700EE8309 /* Main_iPhone.storyboard */,
 				335C9B261882C87700EE8309 /* Main_iPad.storyboard */,
+				33D2005B188C9C2D0043F68E /* BZAppData.h */,
+				33D2005C188C9C2D0043F68E /* BZAppData.m */,
+				33D2005E188CA1F00043F68E /* BZController.h */,
+				33D2005F188CA1F00043F68E /* BZController.m */,
 				335C9B291882C87700EE8309 /* BZFirstViewController.h */,
 				335C9B2A1882C87700EE8309 /* BZFirstViewController.m */,
-				335C9B2C1882C87700EE8309 /* BZSecondViewController.h */,
-				335C9B2D1882C87700EE8309 /* BZSecondViewController.m */,
+				33D20058188C98350043F68E /* BZTableViewController.h */,
+				33D20059188C98350043F68E /* BZTableViewController.m */,
+				33D20061188CD2790043F68E /* BZTableRow.h */,
+				33D20062188CD2790043F68E /* BZTableRow.m */,
 				335C9B2F1882C87700EE8309 /* Images.xcassets */,
 				335C9B181882C87700EE8309 /* Supporting Files */,
 			);
@@ -285,10 +295,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				33D2005A188C98350043F68E /* BZTableViewController.m in Sources */,
+				33D2005D188C9C2D0043F68E /* BZAppData.m in Sources */,
 				335C9B221882C87700EE8309 /* BZAppDelegate.m in Sources */,
 				335C9B2B1882C87700EE8309 /* BZFirstViewController.m in Sources */,
-				3335EFD91883526200C84E7D /* BZBeacon.m in Sources */,
-				335C9B2E1882C87700EE8309 /* BZSecondViewController.m in Sources */,
+				33D20063188CD2790043F68E /* BZTableRow.m in Sources */,
+				33D20060188CA1F00043F68E /* BZController.m in Sources */,
 				335C9B1E1882C87700EE8309 /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
