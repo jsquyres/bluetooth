@@ -1,0 +1,19 @@
+Notes for the class PPT Presentation
+
+10 things to talk about - 10 slides
+ - Background
+   - The Internet of Things - communicate via BTLE - use technology (RPi, iPhone) to experiment with BTLE
+   - BluetoothLE and its need, RPi
+     - Wireless low energy opportunistic networking
+     - Everything is connected - explosion of wearables (pictures appear all over the slide)
+     - It is now so low energy that it is in everything (heart monitor, proximity sensor, etc.)
+     - It is showing up everywhere in our lives, lets figure out how to use it
+   - iPhone 5
+     - iOS allows apps to take advantage of BTLE
+   - RPi
+     - A credit card sized computer designed for educational purposes
+     - Perfect for experimentation and hobbyist activities
+     - Runs Linux and has fully capable ports (Ethernet, HDMI, USB, etc.)
+     - A full-fledged computer perfect for experimentation
+   - Bluetooth nub - cheap - works great with RPi
+ - Hypothesis
